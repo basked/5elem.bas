@@ -213,15 +213,16 @@ function InsertProduct ()
                     (int) $prodDesc['prodId'],
                     $prodDesc['name'],
                     (int)$prodDesc['code'],
+                    '',
                     (float) $prodDesc['price']);
               //   для вывода результата
-                // echo '-=' . $i . '=-' . '[' . $catQCatDesc['sectId'] . ','. $catQCatDesc['catName'] . ',' . $catQCatDesc['catId'] . ']=>' . '[' . $prodDesc['prodId'] . ',' .$prodDesc['code'] . ',' . $prodDesc['name'] . ',' . $prodDesc['price'] . ']' . "\n\r";
+                 echo '-=' . $i . '=-' . '[' . $catQCatDesc['sectId'] . ','. $catQCatDesc['catName'] . ',' . $catQCatDesc['catId'] . ']=>' . '[' . $prodDesc['prodId'] . ',' .$prodDesc['code'] . ',' . $prodDesc['name'] . ',' . $prodDesc['price'] . ']' . "\n\r";
                   $i++;
             }
             $curPage++;
         } while ($curPage <= $maxPage);
     }
-    $db->close();
+  //  $db->close();
 }
 
 
@@ -255,9 +256,14 @@ function InsertCategory ()
     }
     //$db->close();
 }
-
 echo date("H:i:s");
 echo "\n\r";
+//$db= new \MySqlDB\MySqlDB();
+InsertProduct();
+
+echo date("H:i:s");
+
+
 //testCatId();
 //$db= new \MySqlDB\MySqlDB();
 //nsertProduct();

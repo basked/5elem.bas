@@ -21,7 +21,7 @@ class MySqlDB extends \mysqli
     /**
      * MySqlDB constructor.
      */
-    public function __construct ()
+    public function __construct()
     {
         $this->mysqli = mysqli_connect(self::HOST, self::USER, self::PASS, self::DB, self::PORT);
         if (mysqli_connect_errno($this->mysqli)) {
@@ -29,20 +29,22 @@ class MySqlDB extends \mysqli
         }
     }
 
-    public function InsertProduct (
+    public function InsertProduct(
         $categoryId,
         $prodId,
         $prodName,
         $prodCode,
+        $prodURL,
         $price)
     {
-        if (!($stmt = $this->mysqli->prepare("
-            INSERT INTO `5elem_db`.`Product`
+        if (!($stmt = $this->mysqli->prepare(
+            "INSERT INTO `5elem_db`.`Product`
             (
             `categoryId`,
             `prodId`,
             `prodName`,
             `prodCode`,
+            `prodURL`,
             `price`)
             VALUES
             (
@@ -50,16 +52,17 @@ class MySqlDB extends \mysqli
             ?,
             ?,
             ?,
-            ?)"))) {
+            ?,
+            ?)"))
+        ) {
             echo "Не удалось подготовить запрос: (" . $this->mysqli->errno . ") " . $this->mysqli->error;
         }
-
-
-        if (!$stmt->bind_param("iisid",
+        if (!$stmt->bind_param("iisisd",
             $categoryId,
             $prodId,
             $prodName,
             $prodCode,
+            $prodURL,
             $price)
         ) {
             echo "Не удалось привязать параметры: (" . $stmt->errno . ") " . $stmt->error;
@@ -70,7 +73,7 @@ class MySqlDB extends \mysqli
         }
     }
 
-    public function InsertCatgory (
+    public function InsertCategory(
         $catId,
         $catName,
         $sectId,
@@ -121,7 +124,7 @@ class MySqlDB extends \mysqli
     }
 
 
-    public function getCategories ()
+    public function getCategories()
     {
         $query = "SELECT DISTINCT id, catURL, catId, catName, sectId, cntPage, cntPage DIV 150 AS maxPage
                     FROM
@@ -137,7 +140,7 @@ class MySqlDB extends \mysqli
             $stmt->execute();
 
             /* Определить переменные для результата */
-            $stmt->bind_result($id,$catURL, $catId, $catName, $sectId, $cntPage, $maxPage);
+            $stmt->bind_result($id, $catURL, $catId, $catName, $sectId, $cntPage, $maxPage);
             $i = 0;
             /* Выбрать значения */
             while ($stmt->fetch()) {
@@ -150,7 +153,6 @@ class MySqlDB extends \mysqli
             }
             /* Завершить запрос и закрыть соединение*/
             $stmt->close();
-            $this->mysqli->close();
             return $catDesc;
         }
     }

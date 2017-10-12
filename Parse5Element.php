@@ -311,12 +311,28 @@ function InsertCategory ()
     }
     //$db->close();
 }
+// ТЕСТИМ
 // ЗАПУСК НА ПАРСИНГ ВСЕХ КАТЕГОРИЙ
 echo date("H:i:s");
 echo "\n\r";
 gettCategoryAll();
 echo date("H:i:s");
-
+/*
+ * ПОЛУЧАЕМ ....
+ * catId=24155;catURL=/catalog/143-led-televizory;catName=LED телевизоры;sectId=143;cntPage=253;
+catId=24155;catURL=/catalog/145-smart-televizory;catName=Smart телевизоры;sectId=145;cntPage=206;
+catId=24155;catURL=/catalog/147-4k-ultra-hd-televizory;catName=4K(Ultra HD) телевизоры;sectId=147;cntPage=132;
+catId=24181;catURL=/catalog/151-priemniki-cifrovogo-signala;catName=Приемники цифрового сигнала;sectId=151;cntPage=9;
+catId=24165;catURL=/catalog/153-pristavki-smart-tv;catName=Приставки Smart TV;sectId=153;cntPage=7;
+catId=24163;catURL=/catalog/155-kronshteyny-i-stoyki-dlya-televizorov;catName=Кронштейны и стойки для телевизоров;sectId=155;cntPage=;
+catId=24183;catURL=/catalog/157-tv-antenny;catName=ТВ антенны;sectId=157;cntPage=13;
+catId=24173;catURL=/catalog/159-pulty-du;catName=Пульты ДУ;sectId=159;cntPage=13;
+catId=24949;catURL=/catalog/977-tv-shtekery;catName=ТВ штекеры;sectId=977;cntPage=3;
+catId=24221;catURL=/catalog/1357-batareyki;catName=Батарейки;sectId=1357;cntPage=103;
+ *
+ *
+ *
+ * */
 
 
 

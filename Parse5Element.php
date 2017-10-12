@@ -16,6 +16,7 @@ class Parse5Element
      */
     private $ch;
     public $html;
+
     // декодируем данные ответа сервера
     public function jdecoder ($json_str)
     {
@@ -69,6 +70,7 @@ class Parse5Element
     {
         $this->ch = nil;
     }
+
     // установка прокси для интернет соединения
     public function setProxy ()
     {
@@ -78,6 +80,7 @@ class Parse5Element
             curl_setopt($this->ch, CURLOPT_PROXYUSERPWD, self::PROXY_NAME . ":" . self::PROXY_PASS);
         }
     }
+
     // установка опций для запроса
     public function setOpt ()
     {
@@ -87,6 +90,7 @@ class Parse5Element
         curl_setopt($this->ch, CURLOPT_SSL_VERIFYPEER, false); // работа с https
         curl_setopt($this->ch, CURLOPT_SSL_VERIFYHOST, false); // работа с https
     }
+
     // установка значений для POST полей -
     public function setPostField ($sectionId, $categoryId, $currPage)
     {
@@ -95,6 +99,7 @@ class Parse5Element
         curl_setopt($this->ch, CURLOPT_POSTFIELDS,
             "categoryId=" . $categoryId . "&currentPage=" . $currPage . "&itemsPerPage=150&viewType=1&sortName=popular&sortDest=desc&searchQuery=&fastFilterId=&filterInStock=1&filterInStore=0");
     }
+
     // возвращает данные контента
     public function getContent ($url)
     {
@@ -167,14 +172,13 @@ function getProductAllDesc ()
 
             foreach ($prodDescs as $prodDesc) {
                 //   для вывода результата
-                echo '-=' . $i . '=-' . '[' . $catQCatDesc['sectId'] . ','. $catQCatDesc['catName'] . ',' . $catQCatDesc['catId'] . ']=>' . '[' . $prodDesc['prodId'] . ',' .$prodDesc['code'] . ',' . $prodDesc['name'] . ',' . $prodDesc['price'] . ']' . "\n\r";
+                echo '-=' . $i . '=-' . '[' . $catQCatDesc['sectId'] . ',' . $catQCatDesc['catName'] . ',' . $catQCatDesc['catId'] . ']=>' . '[' . $prodDesc['prodId'] . ',' . $prodDesc['code'] . ',' . $prodDesc['name'] . ',' . $prodDesc['price'] . ']' . "\n\r";
                 $i++;
             }
             $curPage++;
         } while ($curPage <= $maxPage);
     }
 }
-
 
 // возвращает данные по категориям
 function getCategoryDesc ($url)
@@ -193,6 +197,25 @@ function getCategoryDesc ($url)
     return $categoryDesc;
     unset($f);
 }
+function gettCategoryAll ()
+{
+    $allCats = getAllLink();
+    foreach ($allCats as $cat) {
+        $catDesc = getCategoryDesc('https://5element.by' . $cat['href']);
+        $catId = $catDesc['catId'];
+        $catName = $cat['name'];
+        $sectId = getSectionId($cat['href']);
+        $cntPage = $catDesc['countProd'];
+        $catURL = $cat['href'];
+        echo 'catId=' . $catId . ';' .
+            'catURL=' . $catURL . ';' .
+            'catName=' . $catName . ';' .
+            'sectId=' . $sectId . ';' .
+            'cntPage=' . $cntPage . ';' . "\n\r";
+    }
+    //$db->close();
+}
+
 // количество продуктов в категории
 function getCountProduct ($url)
 {
@@ -238,23 +261,23 @@ function InsertProductDB ()
             $prodDescs = getProductDesc($catQCatDesc['sectId'], $catQCatDesc['catId'], $curPage);
 
             foreach ($prodDescs as $prodDesc) {
-            // тут пишем в бд
+                // тут пишем в бд
                 $db->InsertProduct(
 
                     (int)$catQCatDesc['id'],
-                    (int) $prodDesc['prodId'],
+                    (int)$prodDesc['prodId'],
                     $prodDesc['name'],
                     (int)$prodDesc['code'],
                     '',
-                    (float) $prodDesc['price']);
-              //   для вывода результата
-                 echo '-=' . $i . '=-' . '[' . $catQCatDesc['sectId'] . ','. $catQCatDesc['catName'] . ',' . $catQCatDesc['catId'] . ']=>' . '[' . $prodDesc['prodId'] . ',' .$prodDesc['code'] . ',' . $prodDesc['name'] . ',' . $prodDesc['price'] . ']' . "\n\r";
-                  $i++;
+                    (float)$prodDesc['price']);
+                //   для вывода результата
+                echo '-=' . $i . '=-' . '[' . $catQCatDesc['sectId'] . ',' . $catQCatDesc['catName'] . ',' . $catQCatDesc['catId'] . ']=>' . '[' . $prodDesc['prodId'] . ',' . $prodDesc['code'] . ',' . $prodDesc['name'] . ',' . $prodDesc['price'] . ']' . "\n\r";
+                $i++;
             }
             $curPage++;
         } while ($curPage <= $maxPage);
     }
-  //  $db->close();
+    //  $db->close();
 }
 
 
@@ -288,10 +311,10 @@ function InsertCategory ()
     }
     //$db->close();
 }
+// ЗАПУСК НА ПАРСИНГ ВСЕХ КАТЕГОРИЙ
 echo date("H:i:s");
 echo "\n\r";
-//$db= new \MySqlDB\MySqlDB();
-//InsertProduct();
+gettCategoryAll();
 echo date("H:i:s");
 
 

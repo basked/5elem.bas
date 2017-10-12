@@ -21,7 +21,7 @@ class MySqlDB extends \mysqli
     /**
      * MySqlDB constructor.
      */
-    public function __construct()
+    public function __construct ()
     {
         $this->mysqli = mysqli_connect(self::HOST, self::USER, self::PASS, self::DB, self::PORT);
         if (mysqli_connect_errno($this->mysqli)) {
@@ -29,7 +29,18 @@ class MySqlDB extends \mysqli
         }
     }
 
-    public function InsertProduct(
+    public function truncateTable ($tableName)
+    {
+        $sql = "delete from `5elem_db`.`$tableName`";
+        if (!($this->mysqli->query($sql))
+        ) {
+            echo "Не удалось подготовить запрос: (" . $this->mysqli->errno . ") " . $this->mysqli->error;
+        }
+        return $this->mysqli->affected_rows;
+    }
+
+
+    public function insertProduct (
         $categoryId,
         $prodId,
         $prodName,
@@ -73,7 +84,7 @@ class MySqlDB extends \mysqli
         }
     }
 
-    public function InsertCategory(
+    public function InsertCategory (
         $catId,
         $catName,
         $sectId,
@@ -117,14 +128,13 @@ class MySqlDB extends \mysqli
         ) {
             echo "Не удалось привязать параметры: (" . $stmt->errno . ") " . $stmt->error;
         }
-
         if (!$stmt->execute()) {
             echo "Не удалось выполнить запрос: (" . $stmt->errno . ") " . $stmt->error;
         }
     }
 
 
-    public function getCategories()
+    public function getCategories ()
     {
         $query = "SELECT DISTINCT id, catURL, catId, catName, sectId, cntPage, cntPage DIV 150 AS maxPage
                     FROM
@@ -158,7 +168,7 @@ class MySqlDB extends \mysqli
     }
 }
 
-/*
+
 $db = new MySqlDB();
-$db->InsertProduct(20,'484205','Чехол-книжка Samsung Clear View Standing Cover для Galaxy S8+ голубой','71649','','136.90');
-*/
+echo $db->truncateTable('Product');
+//$db->close();

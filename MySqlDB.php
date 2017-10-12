@@ -168,7 +168,3 @@ class MySqlDB extends \mysqli
     }
 }
 
-
-$db = new MySqlDB();
-echo $db->truncateTable('Product');
-//$db->close();

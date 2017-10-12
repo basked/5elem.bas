@@ -16,7 +16,7 @@ class Parse5Element
      */
     private $ch;
     public $html;
-
+    // декодируем данные ответа сервера
     public function jdecoder ($json_str)
     {
         $cyr_chars = array(
@@ -69,7 +69,7 @@ class Parse5Element
     {
         $this->ch = nil;
     }
-
+    // установка прокси для интернет соединения
     public function setProxy ()
     {
         if ($_SERVER['COMPUTERNAME'] == 'GT-ASUP6VM') {
@@ -78,7 +78,7 @@ class Parse5Element
             curl_setopt($this->ch, CURLOPT_PROXYUSERPWD, self::PROXY_NAME . ":" . self::PROXY_PASS);
         }
     }
-
+    // установка опций для запроса
     public function setOpt ()
     {
         curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true); // возвращает результат в переменную а не в буфер
@@ -87,7 +87,7 @@ class Parse5Element
         curl_setopt($this->ch, CURLOPT_SSL_VERIFYPEER, false); // работа с https
         curl_setopt($this->ch, CURLOPT_SSL_VERIFYHOST, false); // работа с https
     }
-
+    // установка значений для POST полей -
     public function setPostField ($sectionId, $categoryId, $currPage)
     {
         curl_setopt($this->ch, CURLOPT_URL, "https://5element.by/ajax/catalog_category_list.php?SECTION_ID=" . $sectionId);
@@ -95,7 +95,7 @@ class Parse5Element
         curl_setopt($this->ch, CURLOPT_POSTFIELDS,
             "categoryId=" . $categoryId . "&currentPage=" . $currPage . "&itemsPerPage=150&viewType=1&sortName=popular&sortDest=desc&searchQuery=&fastFilterId=&filterInStock=1&filterInStore=0");
     }
-
+    // возвращает данные контента
     public function getContent ($url)
     {
         $this->ch = curl_init($url);
@@ -105,7 +105,7 @@ class Parse5Element
         curl_close($this->ch);
     }
 
-
+    // возвращает данные контента с учетом POST полей
     public function getContentPostFields ($sectionId, $categoryId, $currPage)
     {
         $this->ch = curl_init("https://5element.by/ajax/catalog_category_filter.php?SECTION_ID=" . $sectionId);
@@ -117,11 +117,20 @@ class Parse5Element
     }
 }
 
+// позвращает параметр sectId - нужен для запроса в getProductDesc()
+function getSectionId ($url)
+{
+    $p = strpos($url, '-');
+    $sectionId = substr($url, 9, $p - 9);
+    return $sectionId;
+}
+
 /**
  * @param $sectionId
  * @param $categoryId
  * @return mixed
  */
+// возвращает данные по продуктам первой страницы
 function getProductDesc ($sectionId, $categoryId, $currPage)
 {
     $f = new Parse5Element();
@@ -143,13 +152,31 @@ function getProductDesc ($sectionId, $categoryId, $currPage)
     unset($f);
 }
 
-function getSectionId ($url)
+// возвращает данные по продуктам первой страницы
+function getProductAllDesc ()
 {
-    $p = strpos($url, '-');
-    $sectionId = substr($url, 9, $p - 9);
-    return $sectionId;
+    $db = new \MySqlDB\MySqlDB();
+    // данные из БД для вывода всех категорий и подкатегорий
+    $catQCatDescs = $db->getCategories();
+    $i = 1;
+    $curPage = 1;
+    $maxPage = $catQCatDescs[0]['maxPage'] + 1;
+    foreach ($catQCatDescs as $catQCatDesc) {
+        do {
+            $prodDescs = getProductDesc($catQCatDesc['sectId'], $catQCatDesc['catId'], $curPage);
+
+            foreach ($prodDescs as $prodDesc) {
+                //   для вывода результата
+                echo '-=' . $i . '=-' . '[' . $catQCatDesc['sectId'] . ','. $catQCatDesc['catName'] . ',' . $catQCatDesc['catId'] . ']=>' . '[' . $prodDesc['prodId'] . ',' .$prodDesc['code'] . ',' . $prodDesc['name'] . ',' . $prodDesc['price'] . ']' . "\n\r";
+                $i++;
+            }
+            $curPage++;
+        } while ($curPage <= $maxPage);
+    }
 }
 
+
+// возвращает данные по категориям
 function getCategoryDesc ($url)
 {
     $f = new Parse5Element();
@@ -166,7 +193,7 @@ function getCategoryDesc ($url)
     return $categoryDesc;
     unset($f);
 }
-
+// количество продуктов в категории
 function getCountProduct ($url)
 {
     $f = new Parse5Element();
@@ -177,11 +204,14 @@ function getCountProduct ($url)
     unset($f);
 }
 
+// функция возвращает набор символов
 function getAllLink ()
 {
     $f = new Parse5Element();
+    /*начало декодирования символов в HTML*/
     $html = $f->jdecoder($f->getContent('https://5element.by/catalog'));
     $html = str_replace('\"', '"', $html);
+    /*конец декодирования символов в HTML*/
     $pq = phpQuery::newDocument($html);
     $hrefs = $pq->find('.catalog-prod-col-item');
     $i = 0;
@@ -195,7 +225,8 @@ function getAllLink ()
     return $href_info;
 }
 
-function InsertProduct ()
+
+function InsertProductDB ()
 {
     $db = new \MySqlDB\MySqlDB();
     $catQCatDescs = $db->getCategories();
@@ -207,6 +238,7 @@ function InsertProduct ()
             $prodDescs = getProductDesc($catQCatDesc['sectId'], $catQCatDesc['catId'], $curPage);
 
             foreach ($prodDescs as $prodDesc) {
+            // тут пишем в бд
                 $db->InsertProduct(
 
                     (int)$catQCatDesc['id'],
@@ -259,7 +291,9 @@ function InsertCategory ()
 echo date("H:i:s");
 echo "\n\r";
 //$db= new \MySqlDB\MySqlDB();
-InsertProduct();
-
+//InsertProduct();
 echo date("H:i:s");
+
+
+
 

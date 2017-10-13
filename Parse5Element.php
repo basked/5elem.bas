@@ -117,6 +117,8 @@ class Parse5Element
         $this->setProxy();
         $this->setOpt();
         $this->setPostField($sectionId, $categoryId, $currPage);
+     $r=curl_exec($this->ch);
+     var_dump($r);
         return curl_exec($this->ch);
         curl_close($this->ch);
     }
@@ -315,7 +317,7 @@ function InsertCategory ()
 // ЗАПУСК НА ПАРСИНГ ВСЕХ КАТЕГОРИЙ
 echo date("H:i:s");
 echo "\n\r";
-InsertProductDB();
+var_dump( getProductDesc(157,24183,1));
 echo date("H:i:s");
 /*
  * ПОЛУЧАЕМ ....

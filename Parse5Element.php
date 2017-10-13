@@ -315,7 +315,7 @@ function InsertCategory ()
 // ЗАПУСК НА ПАРСИНГ ВСЕХ КАТЕГОРИЙ
 echo date("H:i:s");
 echo "\n\r";
-gettCategoryAll();
+InsertProductDB();
 echo date("H:i:s");
 /*
  * ПОЛУЧАЕМ ....

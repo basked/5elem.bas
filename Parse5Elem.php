@@ -66,7 +66,7 @@ class Parse5Elem
         $ds['DETAIL_URL'] = $html->updateSection->section->DETAIL_URL;
         $ds['DETAIL_PICTURE'] = $html->updateSection->section->DETAIL_PICTURE;
         $ds['DATE_CREATE'] = $html->updateSection->section->DATE_CREATE;
-        $ds['DATE_CREATE'] = $html->count;
+        $ds['COUNT'] = $html->count;
         return $ds;
     }
 

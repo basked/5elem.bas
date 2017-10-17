@@ -30,8 +30,8 @@ function getCategoryDesc()
     echo date("H:i:s") . "\n\r";
     for ($i = 0; $i < count($pd); $i++) {
         $cd = $p->getCategotyDesc($pd[$i]['id']);
-       // var_dump($cd);
-        echo $cd['ID_INPUT']."==". $cd['ID']."==".$cd['UF_IB_RELATED_ID']."==".$cd['NAME']. "\n\r";
+       var_dump($cd);
+      //  echo $cd['ID_INPUT']."==". $cd['ID']."==".$cd['UF_IB_RELATED_ID']."==".$cd['NAME']. "\n\r";
     }
     echo date("H:i:s") . "\n\r";
     echo "Всего: " . count($pd);
@@ -42,11 +42,11 @@ function getProductFromCat()
 {
     $p = new \Parse5Elem\Parse5Elem();
     $p->setCurlOptStatic();
-    $url = $p::getCategoryAJAX_URL(17743);
+    $url = $p::getCategoryAJAX_URL(267);
     $p->setCurlOptURL($url);
 //   $p->setCurlOptURL($url);
 
-    $postData = $p->getPostDataCat(24155, 2, 150);
+    $postData = $p->getPostDataCat(24155, 1, 150);
     $p->setCurlOptPostFields($postData);
     $html = $p->getCurlExec();
     $json=json_decode($html);
@@ -67,4 +67,5 @@ function getProductFromCat()
     var_dump($productDesc);
     $p->curlClose();
 }
-getProductFromCat();
+getCategoryDesc();
+//getProductFromCat();

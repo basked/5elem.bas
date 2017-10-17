@@ -317,7 +317,7 @@ function InsertCategory ()
 // ЗАПУСК НА ПАРСИНГ ВСЕХ КАТЕГОРИЙ
 echo date("H:i:s");
 echo "\n\r";
-var_dump( getProductDesc(157,24183,1));
+var_dump( getProductDesc(147,24155,2));
 echo date("H:i:s");
 /*
  * ПОЛУЧАЕМ ....

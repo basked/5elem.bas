@@ -31,7 +31,7 @@ class Parse5Elem
      */
     private $ch;
 
-    public static function getSectionId ($url)
+    public static function getSectionId($url)
     {
         $p = strpos($url, '-');
         $sectionId = substr($url, 9, $p - 9);
@@ -42,23 +42,23 @@ class Parse5Elem
     /**
      * Parse5Elem constructor.
      */
-    public function __construct ()
+    public function __construct($url='')
     {
         $this->html = '';
-        $this->ch = curl_init();
+        $this->ch = curl_init($url);
     }
 
     /**
      * возвращает массив ссылок на категории
      */
-    public function getCategotyDesc ($catecoryId)
+    public function getCategotyDesc($catecoryId)
     {
         $url = self::getCategoryAJAX_URL($catecoryId);
         $this->setCurlOptStatic();
         $this->setCurlOptURL($url);
         $html = $this->getCurlExec();
         $html = json_decode($html);
-
+        $ds['ID_INPUT'] =$catecoryId;
         $ds['ID'] = $html->updateSection->section->ID;
         $ds['UF_IB_RELATED_ID'] = $html->updateSection->section->UF_IB_RELATED_ID;
         $ds['NAME'] = $html->updateSection->section->NAME;
@@ -66,10 +66,11 @@ class Parse5Elem
         $ds['DETAIL_URL'] = $html->updateSection->section->DETAIL_URL;
         $ds['DETAIL_PICTURE'] = $html->updateSection->section->DETAIL_PICTURE;
         $ds['DATE_CREATE'] = $html->updateSection->section->DATE_CREATE;
+        $ds['DATE_CREATE'] = $html->count;
         return $ds;
     }
 
-    private function setCurlOptProxy ()
+    private function setCurlOptProxy()
     {
         curl_setopt($this->ch, CURLOPT_PROXY, self::PROXY_SERVER);
         curl_setopt($this->ch, CURLOPT_PROXYPORT, self::PROXY_PORT);
@@ -82,7 +83,7 @@ class Parse5Elem
      * @param $url
      * @param array $postFields
      */
-    public function setCurlOptStatic ()
+    public function setCurlOptStatic()
     {   // для работы с сетью через прокси
         if ($_SERVER['COMPUTERNAME'] == 'GT-ASUP6VM') {
             $this->setCurlOptProxy();
@@ -101,10 +102,31 @@ class Parse5Elem
      * @param $sectionId
      * @return string
      */
-    public static function getCategoryAJAX_URL ($sectionId)
+    public static function getCategoryAJAX_URL($sectionId)
     {
         return "https://5element.by/ajax/catalog_category_list.php?SECTION_ID=$sectionId";
     }
+
+
+    /**
+     * Поля для запроса продуктов в категории
+     * @param $categoryId
+     * @param $currentPage
+     * @param $itemsPerPage
+     * @return array
+     */
+    public function getPostDataCat($categoryId, $currentPage, $itemsPerPage)
+    {
+        return array('categoryId' => $categoryId,
+            'currentPage' => $currentPage,
+            'itemsPerPage' => $itemsPerPage,
+            'viewType' => 1,
+            'sortName' => 'popular',
+            'sortDest' => 'desc',
+            'filterInStock' => 1,
+            'filterInStore' => 0);
+
+      }
 
     /**
      *  устанавливает значения post полей
@@ -112,25 +134,25 @@ class Parse5Elem
      * @param $currentPage текущая страница
      * @param $itemsPerPage количество товаро
      */
-    public function setCurlOptPostFields ($categoryId, $currentPage, $itemsPerPage)
+    public function setCurlOptPostFields($postFields)
     {
-        $postFields = array('categoryId' => $categoryId, 'currentPage' => $currentPage, 'itemsPerPage' => $itemsPerPage, 'viewType' => 1, 'sortName' => 'popular', 'sortDest' => 'desc', 'filterInStock' => 1, 'filterInStore' => 0);
+        //  $postFields = array('categoryId' => $categoryId, 'currentPage' => $currentPage, 'itemsPerPage' => $itemsPerPage, 'viewType' => 1, 'sortName' => 'popular', 'sortDest' => 'desc', 'filterInStock' => 1, 'filterInStore' => 0);
         curl_setopt($this->ch, CURLOPT_POSTFIELDS, $postFields);
     }
 
 
-    public function setCurlOptURL ($url)
+    public function setCurlOptURL($url)
     {
         curl_setopt($this->ch, CURLOPT_URL, $url);
     }
 
 
-    public function curlClose ()
+    public function curlClose()
     {
         curl_close($this->ch);
     }
 
-    public function getCurlExec ()
+    public function getCurlExec()
     {
         return curl_exec($this->ch);
     }
@@ -140,7 +162,7 @@ class Parse5Elem
      * @param $json_str
      * @return mixed
      */
-    private function jdecoder ($json_str)
+    private static function jdecoder($json_str)
     {
         $cyr_chars = array(
             '\u0430' => 'а', '\u0410' => 'А',
@@ -188,9 +210,9 @@ class Parse5Elem
         return $json_str;
     }
 
-    public function getDecodeHTML ($response)
+    public static function getDecodeHTML($response)
     {
-        $res = $this->jdecoder($response);
+        $res = self::jdecoder($response);
         $res = str_replace('\"', '"', $res);
         $res = str_replace('\/', '/', $res);
         return $res;
@@ -200,7 +222,7 @@ class Parse5Elem
      * @param $fileName файл_лога
      * @param $context  содержимое_для_записи
      */
-    public function logToFile ($fileName, $context)
+    public function logToFile($fileName, $context)
     {
         if (is_writable($fileName)) {
             if (!$handle = fopen($fileName, 'a')) {

@@ -15,13 +15,13 @@ class MySqlDB extends \mysqli
     const PORT = 3306;
     const USER = 'root';
     const PASS = '';
-    const DB = '5elem_db';
+    const DB = 'user1111058_5elem_db';
     private $mysqli;
 
     /**
      * MySqlDB constructor.
      */
-    public function __construct ()
+    public function __construct()
     {
         $this->mysqli = mysqli_connect(self::HOST, self::USER, self::PASS, self::DB, self::PORT);
         if (mysqli_connect_errno($this->mysqli)) {
@@ -29,9 +29,9 @@ class MySqlDB extends \mysqli
         }
     }
 
-    public function truncateTable ($tableName)
+    public function truncateTable($tableName)
     {
-        $sql = "delete from `5elem_db`.`$tableName`";
+        $sql = "delete from `$tableName`";
         if (!($this->mysqli->query($sql))
         ) {
             echo "Не удалось подготовить запрос: (" . $this->mysqli->errno . ") " . $this->mysqli->error;
@@ -40,7 +40,7 @@ class MySqlDB extends \mysqli
     }
 
 
-    public function insertProduct (
+    public function insertProduct(
         $categoryId,
         $prodId,
         $prodName,
@@ -49,7 +49,7 @@ class MySqlDB extends \mysqli
         $price)
     {
         if (!($stmt = $this->mysqli->prepare(
-            "INSERT INTO `5elem_db`.`Product`
+            "INSERT INTO `s_pars_Product`
             (
             `categoryId`,
             `prodId`,
@@ -84,17 +84,18 @@ class MySqlDB extends \mysqli
         }
     }
 
-    public function InsertCategory (
+    public function insertCategory(
         $catId,
         $catName,
         $sectId,
         $cntPage,
         $dateIns,
         $act,
-        $catURL)
+        $catURL,
+        $idParsing)
     {
         if (!($stmt = $this->mysqli->prepare("
-            INSERT INTO `5elem_db`.`Category`
+            INSERT INTO `s_pars_category`
             (
             `catId`,
             `catName`,
@@ -102,9 +103,11 @@ class MySqlDB extends \mysqli
             `cntPage`,
             `dateIns`,
             `act`,
-            `catURL`)
+            `catURL`,
+            `idParsing`)
             VALUES
             (
+            ?,
             ?,
             ?,
             ?,
@@ -117,14 +120,15 @@ class MySqlDB extends \mysqli
         }
 
 
-        if (!$stmt->bind_param("isiisis",
+        if (!$stmt->bind_param("isiisisi",
             $catId,
             $catName,
             $sectId,
             $cntPage,
             $dateIns,
             $act,
-            $catURL)
+            $catURL,
+         $idParsing)
         ) {
             echo "Не удалось привязать параметры: (" . $stmt->errno . ") " . $stmt->error;
         }
@@ -133,16 +137,55 @@ class MySqlDB extends \mysqli
         }
     }
 
-
-    public function getCategories ()
+    public function InsertMain(
+        $name,
+        $pars_date,
+        $act)
     {
-        $query = "SELECT DISTINCT id, catURL, catId, catName, sectId, cntPage, cntPage DIV 150 AS maxPage
+        if (!($stmt = $this->mysqli->prepare("
+            INSERT INTO `s_pars_main`
+            (
+            `name`,
+            `pars_date`,
+            `act`)
+            VALUES
+            (
+            ?,
+            ?,
+            ?
+            )"))
+        ) {
+            echo "Не удалось подготовить запрос: (" . $this->mysqli->errno . ") " . $this->mysqli->error;
+        }
+
+
+        if (!$stmt->bind_param("ssi",
+            $name,
+            $pars_date,
+            $act)
+        ) {
+            echo "Не удалось привязать параметры: (" . $stmt->errno . ") " . $stmt->error;
+        }
+        if (!$stmt->execute()) {
+            echo "Не удалось выполнить запрос: (" . $stmt->errno . ") " . $stmt->error;
+        }
+    }
+
+    public function getCategories()
+    {
+        $query = "SELECT DISTINCT
+                        catId, catName
                     FROM
-                        5elem_db.Category
+                        s_pars_category c,
+                        s_pars_main m
                     WHERE
-                        catId <> 0 AND sectId <> 0
-                    ORDER BY maxpage DESC
-                    ";
+                        m.id = c.idParsing AND catId <> 0
+                            AND sectId <> 0
+                            AND idParsing = (SELECT 
+                                MAX(id)
+                            FROM
+                                s_pars_main)
+                                        ";
 
         if ($stmt = $this->mysqli->prepare($query)) {
 
@@ -150,14 +193,11 @@ class MySqlDB extends \mysqli
             $stmt->execute();
 
             /* Определить переменные для результата */
-            $stmt->bind_result($id, $catURL, $catId, $catName, $sectId, $cntPage, $maxPage);
+            $stmt->bind_result( $catId, $catName);
             $i = 0;
             /* Выбрать значения */
             while ($stmt->fetch()) {
-                $catDesc[$i]['id'] = $id;
                 $catDesc[$i]['catId'] = $catId;
-                $catDesc[$i]['sectId'] = $sectId;
-                $catDesc[$i]['maxPage'] = $maxPage;
                 $catDesc[$i]['catName'] = $catName;
                 $i++;
             }
@@ -166,5 +206,36 @@ class MySqlDB extends \mysqli
             return $catDesc;
         }
     }
+
+
+public function getMaxId($table)
+{
+    $query = "SELECT max(id) as maxId
+                    FROM
+                      $table
+                   ";
+
+    if ($stmt = $this->mysqli->prepare($query)) {
+
+        /* Запустить выражение */
+        $stmt->execute();
+
+        /* Определить переменные для результата */
+        $stmt->bind_result($maxId);
+        $i = 0;
+        /* Выбрать значения */
+        while ($stmt->fetch()) {
+           $res = $maxId;
+        }
+        /* Завершить запрос и закрыть соединение*/
+        $stmt->close();
+        return $res;
+    }
+}
 }
 
+
+//$m= new MySqlDB();
+//echo $m->getMaxId('s_pars_main');
+//$m->InsertMain('Парсинг 18.10,2017', (string)date("H:i:s"),1);
+//var_dump($m->getCategories());

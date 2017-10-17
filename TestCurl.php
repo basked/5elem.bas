@@ -96,25 +96,11 @@ curl_setopt($ch, CURLOPT_POSTFIELDS, $data);*/
 //$postField = "categoryId=$categoryId&currentPage=0&itemsPerPage=150&viewType=1&sortName=popular&sortDest=desc&searchQuery=&fastFilterId=&filterInStock=1&filterInStore=0";
 $postField = array('categoryId'=>$categoryId,'currentPage'=>1,'itemsPerPage'=>150,'viewType'=>1,'sortName'=>'popular','sortDest'=>'desc','filterInStock'=>1,'filterInStore'=>0);
 
-
-
 curl_setopt($ch, CURLOPT_POSTFIELDS, $postField);
-
 $html = curl_exec($ch);
 $html=jdecoder($html);
 $html = str_replace('\"', '"', $html);
 $html = str_replace('\/', '/', $html);
-
-
-//$s = json_decode($html);
-//var_dump($s);
-//$html = stripcslashes($jsr);
-//exportToFile('export.html',$stripa);
-//
-//var_dump($res);
-//exportToFile('export1.html',$html);
-
-
 $pq = phpQuery::newDocument($html);
 //$titles = $pq->find('.spec-product.js-product-item');
 $titles = $pq->find('.spec-product.js-product-item');

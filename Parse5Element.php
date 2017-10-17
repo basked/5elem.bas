@@ -1,6 +1,6 @@
 <?php
-require('/phpQuery/phpQuery.php'); // подключаем phpQuery
-require('/libs/helpers.php'); // подключаем файл для вывода отладочной инфы
+require('phpQuery/phpQuery.php'); // подключаем phpQuery
+require('libs/helpers.php'); // подключаем файл для вывода отладочной инфы
 require_once('MySqlDB.php');
 header("Content-type: text/html; charset = utf-8"); // кодировка utf-8
 class Parse5Element

@@ -1,7 +1,7 @@
 <?php
-require('/phpQuery/phpQuery.php'); // подключаем phpQuery
-require('/libs/helpers.php'); // подключаем файл для вывода отладочной инфы
- function jdecoder ($json_str)
+include 'phpQuery/phpQuery.php'; // подключаем phpQuery
+include  'libs/helpers.php'; // подключаем файл для вывода отладочной инфы
+function jdecoder ($json_str)
 {
     $cyr_chars = array(
         '\u0430' => 'а', '\u0410' => 'А',
@@ -48,7 +48,7 @@ require('/libs/helpers.php'); // подключаем файл для вывод
     }
     return $json_str;
 }
-function exportToFile ($fileName, $context)
+function logToFile ($fileName, $context)
 {
     if (is_writable($fileName)) {
         if (!$handle = fopen($fileName, 'a')) {
@@ -79,14 +79,25 @@ curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true); //использовать ре�
 curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36'); //выставляем настройки браузера
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // работа с https
 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false); // работа с https
-curl_setopt($ch, CURLOPT_URL, "https://5element.by/ajax/catalog_category_list.php?SECTION_ID=183");
+curl_setopt($ch, CURLOPT_URL, "https://5element.by/ajax/catalog_category_list.php?SECTION_ID=1403");
 curl_setopt($ch, CURLOPT_POST, 1);
 $a = curl_exec($ch);
 $s = json_decode($a);
 
 $categoryId = $s->updateSection->section->UF_IB_RELATED_ID;
 
-$postField = "categoryId=$categoryId&currentPage=1&itemsPerPage=150&viewType=1&sortName=popular&sortDest=desc&searchQuery=&fastFilterId=&filterInStock=1&filterInStore=0";
+
+/* $data = array('name' => 'Foo', 'file' => '@/home/user/test.png');
+
+curl_setopt($ch, CURLOPT_URL, 'http://localhost/upload.php');
+curl_setopt($ch, CURLOPT_POSTFIELDS, $data);*/
+
+
+//$postField = "categoryId=$categoryId&currentPage=0&itemsPerPage=150&viewType=1&sortName=popular&sortDest=desc&searchQuery=&fastFilterId=&filterInStock=1&filterInStore=0";
+$postField = array('categoryId'=>$categoryId,'currentPage'=>1,'itemsPerPage'=>150,'viewType'=>1,'sortName'=>'popular','sortDest'=>'desc','filterInStock'=>1,'filterInStore'=>0);
+
+
+
 curl_setopt($ch, CURLOPT_POSTFIELDS, $postField);
 
 $html = curl_exec($ch);

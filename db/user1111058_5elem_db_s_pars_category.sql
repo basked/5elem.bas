@@ -31,10 +31,10 @@ CREATE TABLE `s_pars_category` (
   `dateIns` date DEFAULT NULL COMMENT 'date insert record',
   `act` int(11) DEFAULT NULL COMMENT 'actual record',
   `catURL` varchar(200) DEFAULT NULL COMMENT '''url category''',
-  `idParsing` int(11) DEFAULT NULL,
+  `idMain` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `FK_Parsing_Category_idx` (`idParsing`),
-  CONSTRAINT `FK_Main_Category` FOREIGN KEY (`idParsing`) REFERENCES `s_pars_main` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  KEY `FK_Parsing_Category_idx` (`idMain`),
+  CONSTRAINT `FK_Main_Category` FOREIGN KEY (`idMain`) REFERENCES `s_pars_main` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=456 DEFAULT CHARSET=utf8 COMMENT='Table from category info';
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

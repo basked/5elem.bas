@@ -60,7 +60,7 @@ class Parse5Elem
         $links = $pq->find('.catalog-prod-col-item>a, .catalog-prod-col-item-nested-item>a');
         $i = 0;
         foreach ($links as $link) {
-            if (strpos(trim(pq($link)->text()),'/action/') === false) {
+            if (strpos((string)(pq($link)->text()),'/action/') === false) {
                 $arrCategories[$i]['name'] = trim(pq($link)->text());
                 $arrCategories[$i]['href'] = trim(pq($link)->attr('href'));
                 $arrCategories[$i]['id'] = (int)self::getSectionId($arrCategories[$i]['href']);

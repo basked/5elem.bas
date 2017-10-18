@@ -15,7 +15,7 @@ class MySqlDB extends \mysqli
     const PORT = 3306;
     const USER = 'root';
     const PASS = '';
-    const DB = 'user1111058_5elem_db';
+    const DB = 'user1111058_sam';
     private $mysqli;
 
     /**
@@ -92,7 +92,7 @@ class MySqlDB extends \mysqli
         $dateIns,
         $act,
         $catURL,
-        $idParsing)
+        $idMain)
     {
         if (!($stmt = $this->mysqli->prepare("
             INSERT INTO `s_pars_category`
@@ -104,7 +104,7 @@ class MySqlDB extends \mysqli
             `dateIns`,
             `act`,
             `catURL`,
-            `idParsing`)
+            `idMain`)
             VALUES
             (
             ?,
@@ -128,7 +128,7 @@ class MySqlDB extends \mysqli
             $dateIns,
             $act,
             $catURL,
-         $idParsing)
+         $idMain)
         ) {
             echo "Не удалось привязать параметры: (" . $stmt->errno . ") " . $stmt->error;
         }
@@ -179,9 +179,9 @@ class MySqlDB extends \mysqli
                         s_pars_category c,
                         s_pars_main m
                     WHERE
-                        m.id = c.idParsing AND catId <> 0
+                        m.id = c.idMain AND catId <> 0
                             AND sectId <> 0
-                            AND idParsing = (SELECT 
+                            AND idMain = (SELECT 
                                 MAX(id)
                             FROM
                                 s_pars_main)

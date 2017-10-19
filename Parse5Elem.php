@@ -241,8 +241,7 @@ class Parse5Elem
      * @param $itemsPerPage
      * @return array
      */
-    public
-    function getPostDataCat ($categoryId, $currentPage, $itemsPerPage)
+    public function getPostDataCat ($categoryId, $currentPage, $itemsPerPage)
     {
         return array('categoryId' => (int)$categoryId,
             'currentPage' => (int)$currentPage,
@@ -252,6 +251,31 @@ class Parse5Elem
             'sortDest' => 'desc',
             'filterInStock' => 1,
             'filterInStore' => 0);
+    }
+    /**
+     * Поля для запроса информации о продукте
+     * @param $categoryId
+     * @param $currentPage
+     * @param $itemsPerPage
+     * @return array
+     */
+    public function getPostDataProd ($productId)
+    {
+
+        return array(   'deliveryGetState[tab]'=>'shop',
+                        'deliveryGetState[shopView]'=>'list',
+                        'deliveryGetState[productId]'=>$productId,
+                        'deliveryGetState[forCheckout]'=>0,
+                        'deliveryGetState[mkpShowAll]'=>false,
+                        'deliveryGetState[showMap]'=>false,
+                        'deliveryGetState[data][shopLocationId]'=>31379,
+                        'deliveryGetState[data][homeLocationId]'=>31379,
+                        'deliveryGetState[data][tab]'=>'shop',
+                        'deliveryGetState[data][shopId]'=>0,
+                        'deliveryGetState[data][deliveryProductId]'=>0,
+                        'deliveryGetState[data][deliveryProductCategoryId]'=>0,
+                        'deliveryGetState[data][deliveryShopId]'=>0,
+                        'deliveryGetState[data][price]'=>0);
     }
 
     /**

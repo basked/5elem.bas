@@ -191,6 +191,14 @@ class MySqlDB
         return $stmt->insert_id;
 
     }
+    /**
+     * Выбрать все уникальные идентификаторы подкатегорий, которые используются в 5 Элементе
+     * @return mixed
+     */
+    public function getUniqueCodProductSAM()
+    {
+        return $this->getTempQuery("SELECT DISTINCT prodId FROM s_pars_product_5  ORDER BY prodId ASC", MYSQLI_ASSOC);
+    }
 
 
 //------------ОКОНЧАНИЕ->ФУНКЦИИ ДЛЯ РАБОТЫ С ПРОДУКТАМИ **/

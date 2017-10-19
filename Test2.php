@@ -63,9 +63,7 @@ function insertProductFrom5Elem()
                 $productDesc[$i]['code'] = trim(str_replace('Код товара:', '', pq($product)->find('.product-middle-patio-code')->text()));
                 $m->insertProductSAM($catUniRoot['rootId'], $productDesc[$i]['prodId'], $productDesc[$i]['name'], $productDesc[$i]['code']/*, null, $productDesc[$i]['price']*/);
                 $i++;
-
             }
-
             $curPage++;
         } while ($curPage <= $maxPage);
         echo "ID категории: ".$catUniRoot['rootId'].". Кол-во=".$i . "\n\r";
@@ -75,10 +73,38 @@ function insertProductFrom5Elem()
     echo date("H:i:s") . "\n\r";
 }
 
-insertProductFrom5Elem();
+function getProductDetailFrom5Elem()
+{
+    echo "getProductDetailFrom5Elem " . date("H:i:s") . "\n\r";
+    $p = new \Parse5Elem\Parse5Elem();
+    $p->setCurlOptStatic();
+    $p->setCurlOptURL('https://5element.by/ajax/multipoint.php');
+    $m = new  \MySqlDB\MySqlDB();
+    $prodUniProds = $m->getUniqueCodProductSAM(); // уникальные Id товаров
+    foreach ($prodUniProds as $prodUniProd) {
+            $postData = $p->getPostDataProd((int)$prodUniProd['prodId']);
+            $p->setCurlOptPostFields($postData);
+            $html = $p->getCurlExec();
+            $json = json_decode($html);
+            var_dump($json);
+         /*   $html = $p::getDecodeHTML($html);
+            $pq = phpQuery::newDocument($html);
+            $products = $pq->find('.spec-product.js-product-item');
+            foreach ($products as $product) {
+                $productDesc[$i]['name'] = trim(pq($product)->find('.spec-product-middle-title>a')->text());
+                $productDesc[$i]['prodId'] = pq($product)->attr('data-id');
+                $productDesc[$i]['price'] = trim(str_replace(' ', '', pq($product)->find('span._price')->text()));
+                $productDesc[$i]['code'] = trim(str_replace('Код товара:', '', pq($product)->find('.product-middle-patio-code')->text()));
+                $m->insertProductSAM($catUniRoot['rootId'], $productDesc[$i]['prodId'], $productDesc[$i]['name'], $productDesc[$i]['code']/*, null, $productDesc[$i]['price']);*/
+            }
+    $m->close();
+    $p->curlClose();
+    echo date("H:i:s") . "\n\r";
+}
 
 
-
+getProductDetailFrom5Elem();
 /*insertCategoriesFrom5Elem();
 updateCategoriesFrom5Elem();
+insertProductFrom5Elem();
 */

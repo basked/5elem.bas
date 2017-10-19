@@ -3,7 +3,7 @@
 require_once 'Parse5Elem.php';
 require_once 'MySqlDB.php';
 
-function getCategories()
+function getCategories ()
 {
     $p = new \Parse5Elem\Parse5Elem();
     $p->setCurlOptStatic();
@@ -21,30 +21,29 @@ function getCategories()
     }
     $p->CurlClose();
     return $productDesc;
-
 }
 
-function getCategoryDesc()
+function getCategoryDesc ()
 {
     $p = new \Parse5Elem\Parse5Elem();
     $m = new \MySqlDB\MySqlDB();
-    $m->InsertMain('Парсинг 17.10.2017', (string)date("H:i:s"), 1);
+    $m->InsertMain('Парсинг ' . date("d.m.Y H:i:s"), (string)date("d.m.Y H:i:s"), 1);
     $pd = getCategories();
+    $idMain = $m->getMaxId('s_pars_main');
     echo date("H:i:s") . "\n\r";
     for ($i = 0; $i < count($pd); $i++) {
         $cd = $p->getCategotyDesc($pd[$i]['id']);
-        $idParsing = $m->getMaxId('s_pars_main');
-        $m->insertCategory($cd['UF_IB_RELATED_ID'], $cd['NAME'], $cd['ID_INPUT'], 0, null, 0, $cd['DETAIL_URL'], $idParsing);
-        //  var_dump($cd);
+        $m->insertCategory($cd['UF_IB_RELATED_ID'], $cd['NAME'], $cd['ID_INPUT'], 0, null, 0, $cd['DETAIL_URL'], $idMain);
+        echo $i . "\n\r";
         //  echo $cd['ID_INPUT']."==". $cd['ID']."==".$cd['UF_IB_RELATED_ID']."==".$cd['NAME']. "\n\r";
     }
     echo date("H:i:s") . "\n\r";
     echo "Всего: " . count($pd);
     $p->CurlClose();
-    $m->close();
+    // $m->close();
 }
 
-function getProductFromCat()
+function getProductFromCat ()
 {
     $p = new \Parse5Elem\Parse5Elem();
     $p->setCurlOptStatic();
@@ -61,7 +60,7 @@ function getProductFromCat()
             $html = $p->getCurlExec();
             $json = json_decode($html);
             $cnt = $json->count;
-            $maxPage=floor($cnt/150)+1;
+            $maxPage = floor($cnt / 150) + 1;
             $html = $p::getDecodeHTML($html);
             $pq = phpQuery::newDocument($html);
             $titles = $pq->find('.spec-product.js-product-item');
@@ -70,15 +69,18 @@ function getProductFromCat()
                 $productDesc[$i]['prodId'] = pq($title)->attr('data-id');
                 $productDesc[$i]['price'] = trim(str_replace(' ', '', pq($title)->find('span._price')->text()));
                 $productDesc[$i]['code'] = trim(str_replace('Код товара:', '', pq($title)->find('.product-middle-patio-code')->text()));
-                $m->insertProduct($qCategory['catId'], $productDesc[$i]['prodId'],$productDesc[$i]['name'], $productDesc[$i]['code'],null, $productDesc[$i]['price'] );
+                $m->insertProduct($qCategory['catId'], $productDesc[$i]['prodId'], $productDesc[$i]['name'], $productDesc[$i]['code'], null, $productDesc[$i]['price']);
                 $i++;
+                echo $i . "\n\r";
             }
             $curPage++;
-        } while ($curPage <= $maxPage);}
+        } while ($curPage <= $maxPage);
+    }
     var_dump($productDesc);
     $p->curlClose();
-    $m->close();
+    //$m->close();
 
 }
+
 //getCategoryDesc();
 getProductFromCat();

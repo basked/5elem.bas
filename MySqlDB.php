@@ -36,7 +36,6 @@ class MySqlDB
         $this->mysql->close();
     }
 
-
     /**
      * Возвращает данные ввиде массива(ассоативного, числового или комбинированного) из БД взависимости от запроса
      * @param string $sql SQL запрос
@@ -73,6 +72,12 @@ class MySqlDB
 
 //-------------НАЧАЛО->ФУНКЦИИ ДЛЯ РАБОТЫ С КАТЕГОРИЯМИ **/
 
+    public function getIdCategorySAM($catId)
+    {
+        $res = $this->getTempQuery("SELECT id FROM s_pars_category_5 WHERE catId=$catId and act=1", MYSQLI_ASSOC);
+        return (int)$res[0]['id'];
+    }
+
     /**
      * Проверка на существование категории в САМ, по её Id
      * @param $idCat
@@ -88,6 +93,15 @@ class MySqlDB
      * Выбрать все уникальные идентификаторы категорий, которые используются в 5 Элементе
      * @return mixed
      */
+    public function getUniqueRootIdCategorySAM()
+    {
+        return $this->getTempQuery("SELECT DISTINCT rootId FROM s_pars_category_5 WHERE act=1 ORDER BY rootId ASC", MYSQLI_ASSOC);
+    }
+
+    /**
+     * Выбрать все уникальные идентификаторы подкатегорий, которые используются в 5 Элементе
+     * @return mixed
+     */
     public function getUniqueCatIdCategorySAM()
     {
         return $this->getTempQuery("SELECT DISTINCT catId FROM s_pars_category_5 ORDER BY catId ASC", MYSQLI_ASSOC);
@@ -99,8 +113,9 @@ class MySqlDB
      */
     public function getEmptyRootIdCategorySAM()
     {
-        return $this->getTempQuery("SELECT DISTINCT catId FROM s_pars_category_5 WHERE rootId=0", MYSQLI_ASSOC);
+        return $this->getTempQuery("SELECT DISTINCT catId FROM s_pars_category_5 WHERE rootId=0 ORDER BY catId ASC", MYSQLI_ASSOC);
     }
+
 
     /**
      * Вставить новую запись в классификатор категорий
@@ -122,7 +137,7 @@ class MySqlDB
         if (!$stmt->execute()) {
             echo "Не удалось выполнить запрос: (" . $stmt->errno . ") " . $stmt->error;
         }
-          return $stmt->insert_id;
+        return $stmt->insert_id;
 
     }
 
@@ -133,22 +148,52 @@ class MySqlDB
      */
     public function updateRootId($catId, $rootId)
     {
-        if (!($stmt = $this->mysql->prepare("UPDATE s_pars_category_5 SET rootId=? WHERE catId=?"))
+        if ($rootId != 0) {
+            if (!($stmt = $this->mysql->prepare("UPDATE s_pars_category_5 SET rootId=?,act=1 WHERE catId=?"))
+            ) {
+                echo "Не удалось подготовить запрос: (" . $this->mysql->errno . ") " . $this->mysql->error;
+            }
+            if (!$stmt->bind_param("ii", $rootId, $catId)
+            ) {
+                echo "Не удалось привязать параметры: (" . $stmt->errno . ") " . $stmt->error;
+            }
+            if (!$stmt->execute()) {
+                echo "Не удалось выполнить запрос: (" . $stmt->errno . ") " . $stmt->error;
+            }
+            return $stmt->affected_rows;
+        }
+    }
+
+//-------------ОКОНЧАНИЕ->ФУНКЦИИ ДЛЯ РАБОТЫ С КАТЕГОРИЯМИ **/
+
+//-------------НАЧАЛО->ФУНКЦИИ ДЛЯ РАБОТЫ С ПРОДУКТАМИ **/
+
+    /**
+     * Вставить новую запись в классификатор категорий
+     * @param $name , наименование
+     * @param $catId , id в 5 элемент
+     * @param $rootId , главная категория в 5 элемент
+     * @param $act , актуальность
+     */
+    public function insertProductSAM($category_id, $prodId, $name, $cod)
+    {
+        if (!($stmt = $this->mysql->prepare("INSERT INTO s_pars_product_5 (category_id, prodId, name, cod) VALUES(?,?,?,?)"))
         ) {
             echo "Не удалось подготовить запрос: (" . $this->mysql->errno . ") " . $this->mysql->error;
         }
-        if (!$stmt->bind_param("ii", $rootId, $catId)
+        if (!$stmt->bind_param("iisi",$category_id,$prodId, $name, $cod)
         ) {
             echo "Не удалось привязать параметры: (" . $stmt->errno . ") " . $stmt->error;
         }
         if (!$stmt->execute()) {
             echo "Не удалось выполнить запрос: (" . $stmt->errno . ") " . $stmt->error;
         }
-        return $stmt->affected_rows;
+        return $stmt->insert_id;
+
     }
 
-//-------------ОКОНЧАНИЕ->ФУНКЦИИ ДЛЯ РАБОТЫ С КАТЕГОРИЯМИ **/
 
+//------------ОКОНЧАНИЕ->ФУНКЦИИ ДЛЯ РАБОТЫ С ПРОДУКТАМИ **/
 
     public function insertProduct(
         $categoryId,
@@ -344,13 +389,13 @@ class MySqlDB
 }
 
 
-$m = new MySqlDB();
-//echo $m->updateRootId(143, 555);
+//$m = new MySqlDB();
+//echo $m->getIdCategorySAM(1139);
 
 //echo $m->getMaxId('s_pars_main');
 //var_dump($m->existCategorySAM(143));
 //var_dump($m->tempQuery('SELECT * FROM s_pars_category_5',MYSQLI_NUM));
 //var_dump($m->getUniqueCatIdCategorySAM());
 //var_dump($m->getUniqueCatIdCategorySAM());
-echo $m->insertCategorySAM('Телик2', 2, 1, 1);
+//echo $m->insertCategorySAM('Телик2', 2, 1, 1);
 //var_dump($m->getCategories());

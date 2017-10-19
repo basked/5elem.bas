@@ -244,15 +244,14 @@ class Parse5Elem
     public
     function getPostDataCat ($categoryId, $currentPage, $itemsPerPage)
     {
-        return array('categoryId' => $categoryId,
-            'currentPage' => $currentPage,
-            'itemsPerPage' => $itemsPerPage,
+        return array('categoryId' => (int)$categoryId,
+            'currentPage' => (int)$currentPage,
+            'itemsPerPage' => (int)$itemsPerPage,
             'viewType' => 1,
             'sortName' => 'popular',
             'sortDest' => 'desc',
             'filterInStock' => 1,
             'filterInStore' => 0);
-
     }
 
     /**

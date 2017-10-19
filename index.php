@@ -63,12 +63,12 @@ function getProductFromCat ()
             $maxPage = floor($cnt / 150) + 1;
             $html = $p::getDecodeHTML($html);
             $pq = phpQuery::newDocument($html);
-            $titles = $pq->find('.spec-product.js-product-item');
-            foreach ($titles as $title) {
-                $productDesc[$i]['name'] = trim(pq($title)->find('.spec-product-middle-title>a')->text());
-                $productDesc[$i]['prodId'] = pq($title)->attr('data-id');
-                $productDesc[$i]['price'] = trim(str_replace(' ', '', pq($title)->find('span._price')->text()));
-                $productDesc[$i]['code'] = trim(str_replace('Код товара:', '', pq($title)->find('.product-middle-patio-code')->text()));
+            $products = $pq->find('.spec-product.js-product-item');
+            foreach ($products as $product) {
+                $productDesc[$i]['name'] = trim(pq($product)->find('.spec-product-middle-title>a')->text());
+                $productDesc[$i]['prodId'] = pq($product)->attr('data-id');
+                $productDesc[$i]['price'] = trim(str_replace(' ', '', pq($product)->find('span._price')->text()));
+                $productDesc[$i]['code'] = trim(str_replace('Код товара:', '', pq($product)->find('.product-middle-patio-code')->text()));
                 $m->insertProduct($qCategory['catId'], $productDesc[$i]['prodId'], $productDesc[$i]['name'], $productDesc[$i]['code'], null, $productDesc[$i]['price']);
                 $i++;
                 echo $i . "\n\r";

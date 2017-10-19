@@ -39,8 +39,7 @@ class Parse5Elem
         $this->ch = curl_init($url);
     }
 
-    public
-    static function getDecodeHTML ($response)
+    public static function getDecodeHTML ($response)
     {
         $res = self::jdecoder($response);
         $res = str_replace('\"', '"', $res);
@@ -154,8 +153,7 @@ class Parse5Elem
      *  Устанавливает значение URL
      * @param $url
      */
-    public
-    function setCurlOptURL ($url)
+    public function setCurlOptURL ($url)
     {
         curl_setopt($this->ch, CURLOPT_URL, $url);
     }
@@ -165,8 +163,7 @@ class Parse5Elem
      * @param $url
      * @param array $postFields
      */
-    public
-    function setCurlOptStatic ()
+    public function setCurlOptStatic ()
     {   // для работы с сетью через прокси
         if ($_SERVER['COMPUTERNAME'] == 'GT-ASUP6VM') {
             $this->setCurlOptProxy();
@@ -182,8 +179,7 @@ class Parse5Elem
     /**
      * Устанавливает прокси-соединение
      */
-    private
-    function setCurlOptProxy ()
+    private function setCurlOptProxy ()
     {
         curl_setopt($this->ch, CURLOPT_PROXY, self::PROXY_SERVER);
         curl_setopt($this->ch, CURLOPT_PROXYPORT, self::PROXY_PORT);
@@ -194,8 +190,7 @@ class Parse5Elem
      *  Выполнить запрос
      * @return mixed
      */
-    public
-    function getCurlExec ()
+    public function getCurlExec ()
     {
         return curl_exec($this->ch);
     }
@@ -210,8 +205,7 @@ class Parse5Elem
     /**
      * Возвращает массив ссылок на категории
      */
-    public
-    function getCategotyDesc ($catecoryId)
+    public  function getCategotyDesc ($catecoryId)
     {
         $url = self::getCategoryAJAX_URL($catecoryId);
         $this->setCurlOptStatic();

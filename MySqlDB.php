@@ -9,35 +9,51 @@
 namespace MySqlDB;
 
 
-class MySqlDB extends \mysqli
+class MySqlDB
 {
     const HOST = "localhost";
     const PORT = 3306;
     const USER = 'root';
     const PASS = '';
     const DB = 'user1111058_sam';
-    private $mysqli;
+    public $mysql = nil;
 
     /**
      * MySqlDB constructor.
      */
     /*!!bas*/
-    public function __construct ()
+    public function __construct()
     {
-        $mysqli = new mysqli(self::HOST, self::USER, self::PASS, self::DB, self::PORT);
-        if ($mysqli->connect_errno) {
-            printf("Соединение не удалось: %s\n", $mysqli->connect_error);
+        $this->mysql = new \mysqli(self::HOST, self::USER, self::PASS, self::DB, self::PORT);
+        if ($this->mysql->connect_errno) {
+            printf("Соединение не удалось: %s\n", $this->mysql->connect_error);
             exit();
         }
     }
 
-    public function tempQuery ($sql)
+    public function close()
     {
-        if (!($q = $this->mysqli->query($sql))
-        ) {
-            echo "Не удалось подготовить запрос: (" . $this->mysqli->errno . ") " . $this->mysqli->error;
+        $this->mysql->close();
+    }
+
+
+    /**
+     * Возвращает данные ввиде массива(ассоативного, числового или комбинированного) из БД взависимости от запроса
+     * @param string $sql SQL запрос
+     * @param integer $resType Тип MYSQLI_NUM, MYSQLI_ASSOC, MYSQLI_BOTH
+     * @return mixed
+     */
+    public function getTempQuery($sql, $resType)
+    {
+        $result = $this->mysql->query($sql);
+        if (!$result) {
+            echo "Не удалось подготовить запрос: (" . $this->mysql->errno . ") " . $this->mysql->error;
         }
-        return $q->fetch_all();
+        while ($row = $result->fetch_array($resType)) {
+            $rows[] = $row;
+        }
+        $result->close();
+        return $rows;
     }
 
     /**
@@ -45,14 +61,14 @@ class MySqlDB extends \mysqli
      * @param $tableName , наименование наблицы
      * @return int, сколько строк очищено
      */
-    public function truncateTable ($tableName)
+    public function truncateTable($tableName)
     {
-        $sql = "delete from `$tableName`";
-        if (!($this->mysqli->query($sql))
+        $sql = "delete from $tableName";
+        if (!($this->mysql->query($sql))
         ) {
-            echo "Не удалось подготовить запрос: (" . $this->mysqli->errno . ") " . $this->mysqli->error;
+            echo "Не удалось подготовить запрос: (" . $this->mysql->errno . ") " . $this->mysql->error;
         }
-        return $this->mysqli->affected_rows;
+        return $this->mysql->affected_rows;
     }
 
 //-------------НАЧАЛО->ФУНКЦИИ ДЛЯ РАБОТЫ С КАТЕГОРИЯМИ **/
@@ -62,25 +78,28 @@ class MySqlDB extends \mysqli
      * @param $idCat
      * @return mixed
      */
-    public function existCategorySAM ($idCat)
+    public function existCategorySAM($catId)
     {
-        if ($result = $this->mysqli->query("SELECT exists(select catId from s_pars_category_5 where catId=$idCat) as exist")) {
-            $row = $result->fetch_row();  // выводим строку
-            $result->close();
-            return $row[0];
-        }
+        $res = $this->getTempQuery("SELECT exists(select catId FROM s_pars_category_5 WHERE catId=$catId) AS exist", MYSQLI_ASSOC);
+        return (int)$res[0]['exist'];
     }
 
     /**
      * Выбрать все уникальные идентификаторы категорий, которые используются в 5 Элементе
      * @return mixed
      */
-    public function getUniqueCatIdCategorySAM ()
+    public function getUniqueCatIdCategorySAM()
     {
-        $q = $this->mysqli->query("SELECT DISTINCT catId FROM s_pars_category_5 ORDER BY catId DESC ");
-        $rows = $q->fetch_all(); // выводим все записи запроса
-        $q->close();
-        return $rows;
+        return $this->getTempQuery("SELECT DISTINCT catId FROM s_pars_category_5 ORDER BY catId ASC", MYSQLI_ASSOC);
+    }
+
+    /**
+     * Выбрать все подкатегории, у которых не заполнены значение главной категории
+     * @return mixed
+     */
+    public function getEmptyRootIdCategorySAM()
+    {
+        return $this->getTempQuery("SELECT DISTINCT catId FROM s_pars_category_5 WHERE rootId=0", MYSQLI_ASSOC);
     }
 
     /**
@@ -90,46 +109,48 @@ class MySqlDB extends \mysqli
      * @param $rootId , главная категория в 5 элемент
      * @param $act , актуальность
      */
-    public function insertCategorySAM (
-        $name,
-        $catId,
-        $rootId,
-        $act)
+    public function insertCategorySAM($name, $catId, $rootId, $act)
     {
-        if (!($stmt = $this->mysqli->prepare(
-            "INSERT INTO s_pars_category_5
-             (
-               name,
-               catId,
-               rootId,
-               act)
-             VALUES
-             (
-              ?,
-              ?,
-              ?,
-              ?)"
-        ))
+        if (!($stmt = $this->mysql->prepare("INSERT INTO s_pars_category_5 (name,catId,rootId, act) VALUES(?,?,?,?)"))
         ) {
-            echo "Не удалось подготовить запрос: (" . $this->mysqli->errno . ") " . $this->mysqli->error;
+            echo "Не удалось подготовить запрос: (" . $this->mysql->errno . ") " . $this->mysql->error;
         }
-        if (!$stmt->bind_param("siii",
-            $name,
-            $catId,
-            $rootId,
-            $act)
+        if (!$stmt->bind_param("siii", $name, $catId, $rootId, $act)
         ) {
             echo "Не удалось привязать параметры: (" . $stmt->errno . ") " . $stmt->error;
         }
         if (!$stmt->execute()) {
             echo "Не удалось выполнить запрос: (" . $stmt->errno . ") " . $stmt->error;
         }
+          return $stmt->insert_id;
+
+    }
+
+    /**
+     * Обновляет значение главной категории по значению подкатегории
+     * @param integer $catId Подкатегория
+     * @param integer $rootId Главная категория
+     */
+    public function updateRootId($catId, $rootId)
+    {
+        if (!($stmt = $this->mysql->prepare("UPDATE s_pars_category_5 SET rootId=? WHERE catId=?"))
+        ) {
+            echo "Не удалось подготовить запрос: (" . $this->mysql->errno . ") " . $this->mysql->error;
+        }
+        if (!$stmt->bind_param("ii", $rootId, $catId)
+        ) {
+            echo "Не удалось привязать параметры: (" . $stmt->errno . ") " . $stmt->error;
+        }
+        if (!$stmt->execute()) {
+            echo "Не удалось выполнить запрос: (" . $stmt->errno . ") " . $stmt->error;
+        }
+        return $stmt->affected_rows;
     }
 
 //-------------ОКОНЧАНИЕ->ФУНКЦИИ ДЛЯ РАБОТЫ С КАТЕГОРИЯМИ **/
 
 
-    public function insertProduct (
+    public function insertProduct(
         $categoryId,
         $prodId,
         $prodName,
@@ -137,7 +158,7 @@ class MySqlDB extends \mysqli
         $prodURL,
         $price)
     {
-        if (!($stmt = $this->mysqli->prepare(
+        if (!($stmt = $this->mysql->prepare(
             "INSERT INTO `s_pars_Product`
             (
             `categoryId`,
@@ -155,7 +176,7 @@ class MySqlDB extends \mysqli
             ?,
             ?)"))
         ) {
-            echo "Не удалось подготовить запрос: (" . $this->mysqli->errno . ") " . $this->mysqli->error;
+            echo "Не удалось подготовить запрос: (" . $this->mysql->errno . ") " . $this->mysql->error;
         }
         if (!$stmt->bind_param("iisisd",
             $categoryId,
@@ -173,7 +194,7 @@ class MySqlDB extends \mysqli
         }
     }
 
-    public function insertCategory (
+    public function insertCategory(
         $catId,
         $catName,
         $sectId,
@@ -183,7 +204,7 @@ class MySqlDB extends \mysqli
         $catURL,
         $idMain)
     {
-        if (!($stmt = $this->mysqli->prepare('
+        if (!($stmt = $this->mysql->prepare('
             INSERT INTO `s_pars_category`
             (
             `catId`,
@@ -205,7 +226,7 @@ class MySqlDB extends \mysqli
             ?,
             ?)'))
         ) {
-            echo "Не удалось подготовить запрос: (" . $this->mysqli->errno . ") " . $this->mysqli->error;
+            echo "Не удалось подготовить запрос: (" . $this->mysql->errno . ") " . $this->mysql->error;
         }
 
 
@@ -226,12 +247,12 @@ class MySqlDB extends \mysqli
         }
     }
 
-    public function InsertMain (
+    public function InsertMain(
         $name,
         $pars_date,
         $act)
     {
-        if (!($stmt = $this->mysqli->prepare("
+        if (!($stmt = $this->mysql->prepare("
             INSERT INTO `s_pars_main`
             (
             `name`,
@@ -244,7 +265,7 @@ class MySqlDB extends \mysqli
             ?
             )"))
         ) {
-            echo "Не удалось подготовить запрос: (" . $this->mysqli->errno . ") " . $this->mysqli->error;
+            echo "Не удалось подготовить запрос: (" . $this->mysql->errno . ") " . $this->mysql->error;
         }
         if (!$stmt->bind_param("ssi",
             $name,
@@ -258,7 +279,7 @@ class MySqlDB extends \mysqli
         }
     }
 
-    public function getCategories ()
+    public function getCategories()
     {
         $query = "SELECT DISTINCT
                         catId, catName
@@ -274,7 +295,7 @@ class MySqlDB extends \mysqli
                                 s_pars_main)
                                         ";
 
-        if ($stmt = $this->mysqli->prepare($query)) {
+        if ($stmt = $this->mysql->prepare($query)) {
 
             /* Запустить выражение */
             $stmt->execute();
@@ -296,14 +317,14 @@ class MySqlDB extends \mysqli
 
 
     public
-    function getMaxId ($table)
+    function getMaxId($table)
     {
         $query = "SELECT max(id) as maxId
                     FROM
                       $table
                    ";
 
-        if ($stmt = $this->mysqli->prepare($query)) {
+        if ($stmt = $this->mysql->prepare($query)) {
 
             /* Запустить выражение */
             $stmt->execute();
@@ -324,10 +345,12 @@ class MySqlDB extends \mysqli
 
 
 $m = new MySqlDB();
-//echo $m->getMaxId('s_pars_main');
-//echo $m->existCategorySAM(2);
+//echo $m->updateRootId(143, 555);
 
-var_dump($m->tempQuery('SELECT * FROM s_pars_category_5'));
+//echo $m->getMaxId('s_pars_main');
+//var_dump($m->existCategorySAM(143));
+//var_dump($m->tempQuery('SELECT * FROM s_pars_category_5',MYSQLI_NUM));
 //var_dump($m->getUniqueCatIdCategorySAM());
-//$m->insertCategorySAM('Телик2', 2, 1, 1);
+//var_dump($m->getUniqueCatIdCategorySAM());
+echo $m->insertCategorySAM('Телик2', 2, 1, 1);
 //var_dump($m->getCategories());

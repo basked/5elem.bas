@@ -13,7 +13,6 @@ require_once('libs/helpers.php'); // подключаем файл для выв
 
 class Parse5Elem
 {
-
     const PROXY_SERVER = "172.16.15.33";
     const PROXY_PORT = 3128;
     const PROXY_NAME = "gt-asup6";
@@ -26,6 +25,10 @@ class Parse5Elem
      */
 
     public $html;
+    /**
+     * @var переменная для работы с  CURL(дескриптор сеанса)
+     */
+    private $ch;
 
     /**
      * Parse5Elem constructor.
@@ -36,170 +39,13 @@ class Parse5Elem
         $this->ch = curl_init($url);
     }
 
-    /**
-     * @var переменная для работы с  CURL(дескриптор сеанса)
-     */
-    private $ch;
-
-    public static function getSectionId ($url)
-    {
-        $p = strpos($url, '-');
-        $sectionId = substr($url, 9, $p - 9);
-        return $sectionId;
-    }
-
-
-    public function getCategoriesLinks ()
-    {
-        $arrCategories = array();
-        $this->setCurlOptURL('https://5element.by/catalog');
-        $this->setCurlOptStatic();
-        $html = $this->getCurlExec();
-        $pq = \phpQuery::newDocument($html);
-        //  $links = $pq->find('.catalog-prod-col-item>a', '.catalog-prod-col-item-nested-item>a');
-        $links = $pq->find('.catalog-prod-col-item>a, .catalog-prod-col-item-nested-item>a');
-        $i = 0;
-        foreach ($links as $link) {
-            if (strpos((string)(pq($link)->text()),'/action/') === false) {
-                $arrCategories[$i]['name'] = trim(pq($link)->text());
-                $arrCategories[$i]['href'] = trim(pq($link)->attr('href'));
-                $arrCategories[$i]['id'] = (int)self::getSectionId($arrCategories[$i]['href']);
-                $i++;
-           }
-        }
-        var_dump($arrCategories);
-    }
-
-    /**
-     * Возвращает массив ссылок на категории
-     */
     public
-    function getCategotyDesc ($catecoryId)
+    static function getDecodeHTML ($response)
     {
-        $url = self::getCategoryAJAX_URL($catecoryId);
-        $this->setCurlOptStatic();
-        $this->setCurlOptURL($url);
-        $html = $this->getCurlExec();
-        $html = json_decode($html);
-        $ds['ID_INPUT'] = $catecoryId;
-        $ds['ID'] = $html->updateSection->section->ID;
-        $ds['UF_IB_RELATED_ID'] = $html->updateSection->section->UF_IB_RELATED_ID;
-        $ds['NAME'] = $html->updateSection->section->NAME;
-        $ds['SEO_NAME'] = $html->updateSection->section->SEO_NAME;
-        $ds['DETAIL_URL'] = $html->updateSection->section->DETAIL_URL;
-        $ds['DETAIL_PICTURE'] = $html->updateSection->section->DETAIL_PICTURE;
-        $ds['DATE_CREATE'] = $html->updateSection->section->DATE_CREATE;
-        $ds['COUNT'] = $html->count;
-        return $ds;
-    }
-
-    /**
-     * Устанавливает прокси-соединение
-     */
-    private
-    function setCurlOptProxy ()
-    {
-        curl_setopt($this->ch, CURLOPT_PROXY, self::PROXY_SERVER);
-        curl_setopt($this->ch, CURLOPT_PROXYPORT, self::PROXY_PORT);
-        curl_setopt($this->ch, CURLOPT_PROXYUSERPWD, self::PROXY_NAME . ":" . self::PROXY_PASS);
-    }
-
-
-    /**
-     * Устанавливает опции для дескриптора, которые будут неизменными
-     * @param $url
-     * @param array $postFields
-     */
-    public
-    function setCurlOptStatic ()
-    {   // для работы с сетью через прокси
-        if ($_SERVER['COMPUTERNAME'] == 'GT-ASUP6VM') {
-            $this->setCurlOptProxy();
-        }
-        curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true); // возвращает результат в переменную а не в буфер
-        curl_setopt($this->ch, CURLOPT_FOLLOWLOCATION, true); //использовать редиректы
-        curl_setopt($this->ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36'); //выставляем настройки браузера
-        curl_setopt($this->ch, CURLOPT_SSL_VERIFYPEER, false); // работа с https
-        curl_setopt($this->ch, CURLOPT_SSL_VERIFYHOST, false); // работа с https
-        curl_setopt($this->ch, CURLOPT_POST, 1);
-    }
-
-
-    /**
-     * Посылает запрос на AJAX страницу
-     * @param $sectionId
-     * @return string
-     */
-    public
-    static function getCategoryAJAX_URL ($sectionId)
-    {
-        return "https://5element.by/ajax/catalog_category_list.php?SECTION_ID=$sectionId";
-    }
-
-
-    /**
-     * Поля для запроса продуктов в категории
-     * @param $categoryId
-     * @param $currentPage
-     * @param $itemsPerPage
-     * @return array
-     */
-    public
-    function getPostDataCat ($categoryId, $currentPage, $itemsPerPage)
-    {
-        return array('categoryId' => $categoryId,
-            'currentPage' => $currentPage,
-            'itemsPerPage' => $itemsPerPage,
-            'viewType' => 1,
-            'sortName' => 'popular',
-            'sortDest' => 'desc',
-            'filterInStock' => 1,
-            'filterInStore' => 0);
-
-    }
-
-    /**
-     *  устанавливает значения post полей
-     * @param $categoryId ид категории
-     * @param $currentPage текущая страница
-     * @param $itemsPerPage количество товаро
-     */
-    public
-    function setCurlOptPostFields ($postFields)
-    {
-        //  $postFields = array('categoryId' => $categoryId, 'currentPage' => $currentPage, 'itemsPerPage' => $itemsPerPage, 'viewType' => 1, 'sortName' => 'popular', 'sortDest' => 'desc', 'filterInStock' => 1, 'filterInStore' => 0);
-        curl_setopt($this->ch, CURLOPT_POSTFIELDS, $postFields);
-    }
-
-
-    /**
-     *  Устанавливает значение URL
-     * @param $url
-     */
-    public
-    function setCurlOptURL ($url)
-    {
-        curl_setopt($this->ch, CURLOPT_URL, $url);
-    }
-
-
-    /**
-     * Закрывает дескриптор сеанса
-     */
-    public
-    function curlClose ()
-    {
-        curl_close($this->ch);
-    }
-
-    /**
-     *  Выполнить запрос
-     * @return mixed
-     */
-    public
-    function getCurlExec ()
-    {
-        return curl_exec($this->ch);
+        $res = self::jdecoder($response);
+        $res = str_replace('\"', '"', $res);
+        $res = str_replace('\/', '/', $res);
+        return $res;
     }
 
     /**
@@ -256,21 +102,12 @@ class Parse5Elem
         return $json_str;
     }
 
-    public
-    static function getDecodeHTML ($response)
-    {
-        $res = self::jdecoder($response);
-        $res = str_replace('\"', '"', $res);
-        $res = str_replace('\/', '/', $res);
-        return $res;
-    }
-
     /**
+     * Запись информации в Log файл
      * @param $fileName файл_лога
      * @param $context  содержимое_для_записи
      */
-    public
-    function logToFile ($fileName, $context)
+    public static function logToFile ($fileName, $context)
     {
         if (is_writable($fileName)) {
             if (!$handle = fopen($fileName, 'a')) {
@@ -286,6 +123,162 @@ class Parse5Elem
         } else {
             echo "Файл $fileName не доступен для записи";
         }
+    }
+
+    /**
+     * Возвращает все ссылки категорий
+     * @return array
+     */
+    public function getCategoriesLinks ()
+    {
+        $arrCategories = array();
+        $this->setCurlOptURL('https://5element.by/catalog');
+        $this->setCurlOptStatic();
+        $html = $this->getCurlExec();
+        $pq = \phpQuery::newDocument($html);
+        //  $links = $pq->find('.catalog-prod-col-item>a', '.catalog-prod-col-item-nested-item>a');
+        $links = $pq->find('.catalog-prod-col-item>a, .catalog-prod-col-item-nested-item>a');
+        $i = 0;
+        foreach ($links as $link) {
+            if (strpos(trim(pq($link)->attr('href')), '/action/') === false) { // исключаем акции
+                $arrCategories[$i]['href'] = trim(pq($link)->attr('href'));
+                $arrCategories[$i]['name'] = trim(pq($link)->text());
+                $arrCategories[$i]['id'] = (int)self::getSectionId($arrCategories[$i]['href']);
+                $i++;
+            }
+        }
+        return $arrCategories;
+    }
+
+    /**
+     *  Устанавливает значение URL
+     * @param $url
+     */
+    public
+    function setCurlOptURL ($url)
+    {
+        curl_setopt($this->ch, CURLOPT_URL, $url);
+    }
+
+    /**
+     * Устанавливает опции для дескриптора, которые будут неизменными
+     * @param $url
+     * @param array $postFields
+     */
+    public
+    function setCurlOptStatic ()
+    {   // для работы с сетью через прокси
+        if ($_SERVER['COMPUTERNAME'] == 'GT-ASUP6VM') {
+            $this->setCurlOptProxy();
+        }
+        curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true); // возвращает результат в переменную а не в буфер
+        curl_setopt($this->ch, CURLOPT_FOLLOWLOCATION, true); //использовать редиректы
+        curl_setopt($this->ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36'); //выставляем настройки браузера
+        curl_setopt($this->ch, CURLOPT_SSL_VERIFYPEER, false); // работа с https
+        curl_setopt($this->ch, CURLOPT_SSL_VERIFYHOST, false); // работа с https
+        curl_setopt($this->ch, CURLOPT_POST, 1);
+    }
+
+    /**
+     * Устанавливает прокси-соединение
+     */
+    private
+    function setCurlOptProxy ()
+    {
+        curl_setopt($this->ch, CURLOPT_PROXY, self::PROXY_SERVER);
+        curl_setopt($this->ch, CURLOPT_PROXYPORT, self::PROXY_PORT);
+        curl_setopt($this->ch, CURLOPT_PROXYUSERPWD, self::PROXY_NAME . ":" . self::PROXY_PASS);
+    }
+
+    /**
+     *  Выполнить запрос
+     * @return mixed
+     */
+    public
+    function getCurlExec ()
+    {
+        return curl_exec($this->ch);
+    }
+
+    public static function getSectionId ($url)
+    {
+        $p = strpos($url, '-');
+        $sectionId = substr($url, 9, $p - 9);
+        return $sectionId;
+    }
+
+    /**
+     * Возвращает массив ссылок на категории
+     */
+    public
+    function getCategotyDesc ($catecoryId)
+    {
+        $url = self::getCategoryAJAX_URL($catecoryId);
+        $this->setCurlOptStatic();
+        $this->setCurlOptURL($url);
+        $html = $this->getCurlExec();
+        $html = json_decode($html);
+        $ds['ID_INPUT'] = $catecoryId;
+        $ds['ID'] = $html->updateSection->section->ID;
+        $ds['UF_IB_RELATED_ID'] = $html->updateSection->section->UF_IB_RELATED_ID;
+        $ds['NAME'] = $html->updateSection->section->NAME;
+        $ds['SEO_NAME'] = $html->updateSection->section->SEO_NAME;
+        $ds['DETAIL_URL'] = $html->updateSection->section->DETAIL_URL;
+        $ds['DETAIL_PICTURE'] = $html->updateSection->section->DETAIL_PICTURE;
+        $ds['DATE_CREATE'] = $html->updateSection->section->DATE_CREATE;
+        $ds['COUNT'] = $html->count;
+        return $ds;
+    }
+
+    /**
+     * Посылает запрос на AJAX страницу
+     * @param $sectionId
+     * @return string
+     */
+    public static function getCategoryAJAX_URL ($sectionId)
+    {
+        return "https://5element.by/ajax/catalog_category_list.php?SECTION_ID=$sectionId";
+    }
+
+    /**
+     * Поля для запроса продуктов в категории
+     * @param $categoryId
+     * @param $currentPage
+     * @param $itemsPerPage
+     * @return array
+     */
+    public
+    function getPostDataCat ($categoryId, $currentPage, $itemsPerPage)
+    {
+        return array('categoryId' => $categoryId,
+            'currentPage' => $currentPage,
+            'itemsPerPage' => $itemsPerPage,
+            'viewType' => 1,
+            'sortName' => 'popular',
+            'sortDest' => 'desc',
+            'filterInStock' => 1,
+            'filterInStore' => 0);
+
+    }
+
+    /**
+     *  Устанавливает значения post полей
+     * @param $categoryId ид категории
+     * @param $currentPage текущая страница
+     * @param $itemsPerPage количество товаро
+     */
+    public  function setCurlOptPostFields ($postFields)
+    {
+        //  $postFields = array('categoryId' => $categoryId, 'currentPage' => $currentPage, 'itemsPerPage' => $itemsPerPage, 'viewType' => 1, 'sortName' => 'popular', 'sortDest' => 'desc', 'filterInStock' => 1, 'filterInStore' => 0);
+        curl_setopt($this->ch, CURLOPT_POSTFIELDS, $postFields);
+    }
+
+    /**
+     * Закрывает дескриптор сеанса
+     */
+    public  function curlClose ()
+    {
+        curl_close($this->ch);
     }
 
 

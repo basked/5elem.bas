@@ -103,8 +103,8 @@ function getProductDetailFrom5Elem()
 }
 
 
-getProductDetailFrom5Elem();
-/*insertCategoriesFrom5Elem();
+//getProductDetailFrom5Elem();
+insertCategoriesFrom5Elem();
 updateCategoriesFrom5Elem();
 insertProductFrom5Elem();
-*/
+

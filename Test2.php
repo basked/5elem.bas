@@ -61,7 +61,10 @@ function insertProductFrom5Elem()
                 $productDesc[$i]['prodId'] = pq($product)->attr('data-id');
                 $productDesc[$i]['price'] = trim(str_replace(' ', '', pq($product)->find('span._price')->text()));
                 $productDesc[$i]['code'] = trim(str_replace('Код товара:', '', pq($product)->find('.product-middle-patio-code')->text()));
-                $m->insertProductSAM($catUniRoot['rootId'], $productDesc[$i]['prodId'], $productDesc[$i]['name'], $productDesc[$i]['code']/*, null, $productDesc[$i]['price']*/);
+                $productDesc[$i]['oplata_id']=pq($product)->find('.product-item-sticker.product-item-sticker-credit.js-sticker')->attr('data-action-id');
+                $productDesc[$i]['oplata_name']=pq($product)->find('.product-item-sticker.product-item-sticker-credit.js-sticker>img')->attr('title');
+               var_dump($productDesc);
+            //    $m->insertProductSAM($catUniRoot['rootId'], $productDesc[$i]['prodId'], $productDesc[$i]['name'], $productDesc[$i]['code']/*, null, $productDesc[$i]['price']*/);
                 $i++;
             }
             $curPage++;
@@ -104,7 +107,7 @@ function getProductDetailFrom5Elem()
 
 
 //getProductDetailFrom5Elem();
-insertCategoriesFrom5Elem();
-updateCategoriesFrom5Elem();
+//insertCategoriesFrom5Elem();
+//updateCategoriesFrom5Elem();
 insertProductFrom5Elem();
 

@@ -332,13 +332,13 @@ class MySqlDB
 
 //------------НАЧАЛО->ФУНКЦИИ ДЛЯ РАБОТЫ С ЦЕНОЙ **/
     public
-    function insertCenaSAM($productId, $date, $cena, $oplata_id, $main_id)
+    function insertCenaSAM($productId, $cena, $oplata_id, $main_id)
     {
-        if (!($stmt = $this->mysql->prepare("INSERT INTO s_pars_cena_5 (product_id,date,cena,oplata_id,main_id) VALUES(?,?,?,?,?)"))
+        if (!($stmt = $this->mysql->prepare("INSERT INTO s_pars_cena_5 (product_id,cena,oplata_id,main_id) VALUES(?,?,?,?,?)"))
         ) {
             echo "Не удалось подготовить запрос: (" . $this->mysql->errno . ") " . $this->mysql->error;
         }
-        if (!$stmt->bind_param("isdii", $productId, $date, $cena, $oplata_id, $main_id)
+        if (!$stmt->bind_param("idii", $productId, $cena, $oplata_id, $main_id)
         ) {
             echo "Не удалось привязать параметры: (" . $stmt->errno . ") " . $stmt->error;
         }

@@ -17,7 +17,6 @@ create table s_pars_cena_5
   id int auto_increment
     primary key,
   product_id int not null,
-  date datetime not null,
   cena decimal(10,2) default '0.00' null,
   oplata_id int not null,
   main_id int not null

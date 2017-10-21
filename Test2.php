@@ -56,7 +56,7 @@ function insertProductFrom5Elem()
     $p->setCurlOptStatic();
     $p->setCurlOptURL('https://5element.by/ajax/catalog_category_list.php?SECTION_ID=0');
     $m = new  \MySqlDB\MySqlDB();
-    $main_id = $m->insertMainSAM(date("d.m.Y H:i:s"), 1);
+    $main_id = $m->insertMainSAM(date("Y-m-d H:i:s"), 1);
     $catUniRoots = $m->getUniqueRootIdCategorySAM(); // уникальные Id главных категорий товаров
     foreach ($catUniRoots as $catUniRoot) {
         $curPage = 1;
@@ -95,7 +95,7 @@ function insertProductFrom5Elem()
                             $productId = $m->getIdFromProdIdProductSAM($productDesc[$i]['prodId']);
                         };
                     }
-                    $m->insertCenaSAM($productId, date("d.m.Y H:i:s"), $productDesc[$i]['price'], $oplataId, $main_id);
+                    $m->insertCenaSAM($productId, $productDesc[$i]['price'], $oplataId, $main_id);
                     $i++;
                 }
             }
@@ -138,10 +138,8 @@ function getProductDetailFrom5Elem()
     echo date("H:i:s") . "\n\r";
 }
 
-insertCategoriesFrom5Elem();
-updateCategoriesFrom5Elem();
+///insertCategoriesFrom5Elem();
+//updateCategoriesFrom5Elem();
 //getProductDetailFrom5Elem();
-//
-//
-insertProductFrom5Elem();
+//insertProductFrom5Elem();
 

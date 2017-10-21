@@ -117,7 +117,7 @@ class Parse5Elem
                 echo "Ошибка записи содержимого в файл ($fileName)";
                 exit();
             }
-            echo "Содержимое записано в файл ($fileName)";
+            echo "Содержимое записано в файл ($fileName)"."\n\r";
             fclose($handle);
         } else {
             echo "Файл $fileName не доступен для записи";

@@ -8,9 +8,13 @@ function insertCategoriesFrom5Elem()
     $p = new \Parse5Elem\Parse5Elem();
     $m = new  \MySqlDB\MySqlDB();
     $catLinks = $p->getCategoriesLinks();
-    for ($i = 0; $i < count($catLinks); $i++) {
-        if ($m->existCategorySAM($catLinks[$i]['id']) == 0) {
-            $m->insertCategorySAM($catLinks[$i]['name'], $catLinks[$i]['id'], 0, 0);
+    if (!empty($catLinks)) {
+       // $m->updateAct();
+        /*!! ПРОДУМАТЬ КАК ОБНОВИТЬ СУЩЕСТВУЮЩИЕ КАТЕГОРИИ*/
+        for ($i = 0; $i < count($catLinks); $i++) {
+            if ($m->existCategorySAM($catLinks[$i]['id']) == 0) {
+                $m->insertCategorySAM($catLinks[$i]['name'], $catLinks[$i]['id'], -1, 0);
+            } else $p::logToFile('export.html', 'Кетегория с ID=' . $catLinks[$i]['id'] . ' существует в s_p_category_5' . '\n\r');
         }
     }
     $m->close();
@@ -25,9 +29,16 @@ function updateCategoriesFrom5Elem()
     $p = new \Parse5Elem\Parse5Elem();
     $m = new  \MySqlDB\MySqlDB();
     $catEmptyRoots = $m->getEmptyRootIdCategorySAM();
-    foreach ($catEmptyRoots as $catEmptyRoot) {
-        $cd = $p->getCategotyDesc($catEmptyRoot['catId']);
-        $m->updateRootId($catEmptyRoot['catId'], $cd[UF_IB_RELATED_ID]);
+    if (!empty($catEmptyRoots)) {
+        foreach ($catEmptyRoots as $catEmptyRoot) {
+            $cd = $p->getCategotyDesc($catEmptyRoot['catId']);
+            if (!empty($cd[UF_IB_RELATED_ID])) {
+                if ($m->existCategorySAM($cd[UF_IB_RELATED_ID]) == 0) {
+                    $m->insertCategorySAM($cd[NAME], $cd[UF_IB_RELATED_ID], 1, 1);
+                }
+            }
+            $m->updateRootId($catEmptyRoot['catId'], $cd[UF_IB_RELATED_ID]);
+        }
     }
     $m->close();
     $p->curlClose();
@@ -47,7 +58,7 @@ function insertProductFrom5Elem()
         $curPage = 1;
         $i = 0;
         do {
-            $postData = $p->getPostDataCat((int)$catUniRoot['rootId'], $curPage, 150);
+            $postData = $p->getPostDataCat((int)$catUniRoot['catId'], $curPage, 150);
             $p->setCurlOptPostFields($postData);
             $html = $p->getCurlExec();
             $json = json_decode($html);
@@ -56,20 +67,29 @@ function insertProductFrom5Elem()
             $html = $p::getDecodeHTML($html);
             $pq = phpQuery::newDocument($html);
             $products = $pq->find('.spec-product.js-product-item');
-            foreach ($products as $product) {
-                $productDesc[$i]['name'] = trim(pq($product)->find('.spec-product-middle-title>a')->text());
-                $productDesc[$i]['prodId'] = pq($product)->attr('data-id');
-                $productDesc[$i]['price'] = trim(str_replace(' ', '', pq($product)->find('span._price')->text()));
-                $productDesc[$i]['code'] = trim(str_replace('Код товара:', '', pq($product)->find('.product-middle-patio-code')->text()));
-                $productDesc[$i]['oplata_id']=pq($product)->find('.product-item-sticker.product-item-sticker-credit.js-sticker')->attr('data-action-id');
-                $productDesc[$i]['oplata_name']=pq($product)->find('.product-item-sticker.product-item-sticker-credit.js-sticker>img')->attr('title');
-               var_dump($productDesc);
-            //    $m->insertProductSAM($catUniRoot['rootId'], $productDesc[$i]['prodId'], $productDesc[$i]['name'], $productDesc[$i]['code']/*, null, $productDesc[$i]['price']*/);
-                $i++;
-            }
+           if (!empty($products)) {
+               foreach ($products as $product) {
+                   $productDesc[$i]['name'] = trim(pq($product)->find('.spec-product-middle-title>a')->text());
+                   $productDesc[$i]['prodId'] = pq($product)->attr('data-id');
+                   $productDesc[$i]['price'] = trim(str_replace(' ', '', pq($product)->find('span._price')->text()));
+                   $productDesc[$i]['code'] = trim(str_replace('Код товара:', '', pq($product)->find('.product-middle-patio-code')->text()));
+                   $productDesc[$i]['oplata_creditId'] = pq($product)->find('.product-item-sticker.product-item-sticker-credit.js-sticker')->attr('data-action-id');
+                   $productDesc[$i]['oplata_name'] = pq($product)->find('.product-item-sticker.product-item-sticker-credit.js-sticker>img')->attr('title');
+                   // делаем проверку на существование кредита
+                   if (!empty($productDesc[$i]['oplata_creditId'])) {
+                       if ($m->existOplataSAM($productDesc[$i]['oplata_creditId']) == 0) {
+
+                          $oplataId=$m->insertOplataSAM($productDesc[$i]['oplata_creditId'], $productDesc[$i]['oplata_name']);
+                       }
+                   }
+                   $productId = $m->insertProductSAM($m->getIdCategorySAM($catUniRoot['catId']), $productDesc[$i]['prodId'], $productDesc[$i]['name'], $productDesc[$i]['code']/*, null, $productDesc[$i]['price']*/);
+                   $m->insertCenaSAM($productId,date("d.m.Y H:i:s"),$productDesc[$i]['price'],$oplataId);
+                   $i++;
+               }
+           }
             $curPage++;
         } while ($curPage <= $maxPage);
-        echo "ID категории: ".$catUniRoot['rootId'].". Кол-во=".$i . "\n\r";
+        echo "ID категории: " . $catUniRoot['rootId'] . ". Кол-во=" . $i . "\n\r";
     }
     $m->close();
     $p->curlClose();
@@ -85,29 +105,30 @@ function getProductDetailFrom5Elem()
     $m = new  \MySqlDB\MySqlDB();
     $prodUniProds = $m->getUniqueCodProductSAM(); // уникальные Id товаров
     foreach ($prodUniProds as $prodUniProd) {
-            $postData = $p->getPostDataProd((int)$prodUniProd['prodId']);
-            $p->setCurlOptPostFields($postData);
-            $html = $p->getCurlExec();
-            $json = json_decode($html);
-            var_dump($json);
-         /*   $html = $p::getDecodeHTML($html);
-            $pq = phpQuery::newDocument($html);
-            $products = $pq->find('.spec-product.js-product-item');
-            foreach ($products as $product) {
-                $productDesc[$i]['name'] = trim(pq($product)->find('.spec-product-middle-title>a')->text());
-                $productDesc[$i]['prodId'] = pq($product)->attr('data-id');
-                $productDesc[$i]['price'] = trim(str_replace(' ', '', pq($product)->find('span._price')->text()));
-                $productDesc[$i]['code'] = trim(str_replace('Код товара:', '', pq($product)->find('.product-middle-patio-code')->text()));
-                $m->insertProductSAM($catUniRoot['rootId'], $productDesc[$i]['prodId'], $productDesc[$i]['name'], $productDesc[$i]['code']/*, null, $productDesc[$i]['price']);*/
-            }
+        $postData = $p->getPostDataProd((int)$prodUniProd['prodId']);
+        $p->setCurlOptPostFields($postData);
+        $html = $p->getCurlExec();
+        $json = json_decode($html);
+        var_dump($json);
+        /*   $html = $p::getDecodeHTML($html);
+           $pq = phpQuery::newDocument($html);
+           $products = $pq->find('.spec-product.js-product-item');
+           foreach ($products as $product) {
+               $productDesc[$i]['name'] = trim(pq($product)->find('.spec-product-middle-title>a')->text());
+               $productDesc[$i]['prodId'] = pq($product)->attr('data-id');
+               $productDesc[$i]['price'] = trim(str_replace(' ', '', pq($product)->find('span._price')->text()));
+               $productDesc[$i]['code'] = trim(str_replace('Код товара:', '', pq($product)->find('.product-middle-patio-code')->text()));
+               $m->insertProductSAM($catUniRoot['rootId'], $productDesc[$i]['prodId'], $productDesc[$i]['name'], $productDesc[$i]['code']/*, null, $productDesc[$i]['price']);*/
+    }
     $m->close();
     $p->curlClose();
     echo date("H:i:s") . "\n\r";
 }
 
-
-//getProductDetailFrom5Elem();
 //insertCategoriesFrom5Elem();
 //updateCategoriesFrom5Elem();
+//getProductDetailFrom5Elem();
+//
+//
 insertProductFrom5Elem();
 

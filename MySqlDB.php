@@ -9,6 +9,8 @@
 namespace MySqlDB;
 
 
+use Parse5Elem\Parse5Elem;
+
 class MySqlDB
 {
     const HOST = "localhost";
@@ -46,7 +48,9 @@ class MySqlDB
     {
         $result = $this->mysql->query($sql);
         if (!$result) {
-            echo "Не удалось подготовить запрос: (" . $this->mysql->errno . ") " . $this->mysql->error;
+            $err = "Не удалось подготовить запрос: (" . $this->mysql->errno . ") " . $this->mysql->error;
+            echo $err;
+            Parse5Elem::logToFile('log.txt', $err . ' [' . $sql . ']');
         }
         while ($row = $result->fetch_array($resType)) {
             $rows[] = $row;
@@ -69,6 +73,23 @@ class MySqlDB
         }
         return $this->mysql->affected_rows;
     }
+//-------------НАЧАЛО->ФУНКЦИИ ДЛЯ РАБОТЫ С ЗАСАПУСКОМ ПАРСИНГА  **/
+    public function insertMainSAM($date, $act)
+    {
+        if (!($stmt = $this->mysql->prepare("INSERT INTO s_pars_main_5(date, act) VALUES(?,?)"))
+        ) {
+            echo "Не удалось подготовить запрос: (" . $this->mysql->errno . ") " . $this->mysql->error;
+        }
+        if (!$stmt->bind_param("si", $date, $act)
+        ) {
+            echo "Не удалось привязать параметры: (" . $stmt->errno . ") " . $stmt->error;
+        }
+        if (!$stmt->execute()) {
+            echo "Не удалось выполнить запрос: (" . $stmt->errno . ") " . $stmt->error;
+        }
+        return $stmt->insert_id;
+    }
+//-------------ОКОНЧАНИЕ->ФУНКЦИИ ДЛЯ РАБОТЫ С ЗАСАПУСКОМ ПАРСИНГА **/
 
 //-------------НАЧАЛО->ФУНКЦИИ ДЛЯ РАБОТЫ С КАТЕГОРИЯМИ **/
 
@@ -85,9 +106,12 @@ class MySqlDB
      */
     public function existCategorySAM($catId)
     {
-        $res = $this->getTempQuery("SELECT exists(select catId FROM s_pars_category_5 WHERE catId=$catId) AS exist", MYSQLI_ASSOC);
-        return (int)$res[0]['exist'];
+        if (!empty($catId)) {
+            $res = $this->getTempQuery("SELECT exists(select catId FROM s_pars_category_5 WHERE catId=$catId) AS exist", MYSQLI_ASSOC);
+            return (int)$res[0]['exist'];
+        } else return -1;
     }
+
 
     /**
      * Выбрать все уникальные идентификаторы категорий, которые используются в 5 Элементе
@@ -95,7 +119,7 @@ class MySqlDB
      */
     public function getUniqueRootIdCategorySAM()
     {
-        return $this->getTempQuery("SELECT DISTINCT rootId FROM s_pars_category_5 WHERE act=1 ORDER BY rootId ASC", MYSQLI_ASSOC);
+        return $this->getTempQuery("SELECT DISTINCT catId FROM s_pars_category_5 WHERE rootId=1 AND act=1 ORDER BY rootId ASC", MYSQLI_ASSOC);
     }
 
     /**
@@ -113,7 +137,7 @@ class MySqlDB
      */
     public function getEmptyRootIdCategorySAM()
     {
-        return $this->getTempQuery("SELECT DISTINCT catId FROM s_pars_category_5 WHERE rootId=0 ORDER BY catId ASC", MYSQLI_ASSOC);
+        return $this->getTempQuery("SELECT DISTINCT catId FROM s_pars_category_5 WHERE rootId=-1 ORDER BY catId ASC", MYSQLI_ASSOC);
     }
 
 
@@ -138,8 +162,8 @@ class MySqlDB
             echo "Не удалось выполнить запрос: (" . $stmt->errno . ") " . $stmt->error;
         }
         return $stmt->insert_id;
-
     }
+
 
     /**
      * Обновляет значение главной категории по значению подкатегории
@@ -164,6 +188,22 @@ class MySqlDB
         }
     }
 
+    /**
+     * Деактивирует все категории
+     * @param integer $catId Подкатегория
+     * @param integer $rootId Главная категория
+     */
+    public function updateAct()
+    {
+        if (!($stmt = $this->mysql->prepare("UPDATE s_pars_category_5 SET act=0"))
+        ) {
+            echo "Не удалось подготовить запрос: (" . $this->mysql->errno . ") " . $this->mysql->error;
+        }
+        if (!$stmt->execute()) {
+            echo "Не удалось выполнить запрос: (" . $stmt->errno . ") " . $stmt->error;
+        }
+        return $stmt->affected_rows;
+    }
 //-------------ОКОНЧАНИЕ->ФУНКЦИИ ДЛЯ РАБОТЫ С КАТЕГОРИЯМИ **/
 
 //-------------НАЧАЛО->ФУНКЦИИ ДЛЯ РАБОТЫ С ПРОДУКТАМИ **/
@@ -181,7 +221,7 @@ class MySqlDB
         ) {
             echo "Не удалось подготовить запрос: (" . $this->mysql->errno . ") " . $this->mysql->error;
         }
-        if (!$stmt->bind_param("iisi",$category_id,$prodId, $name, $cod)
+        if (!$stmt->bind_param("iisi", $category_id, $prodId, $name, $cod)
         ) {
             echo "Не удалось привязать параметры: (" . $stmt->errno . ") " . $stmt->error;
         }
@@ -191,6 +231,7 @@ class MySqlDB
         return $stmt->insert_id;
 
     }
+
     /**
      * Выбрать все уникальные идентификаторы подкатегорий, которые используются в 5 Элементе
      * @return mixed
@@ -202,6 +243,87 @@ class MySqlDB
 
 
 //------------ОКОНЧАНИЕ->ФУНКЦИИ ДЛЯ РАБОТЫ С ПРОДУКТАМИ **/
+
+
+//------------НАЧАЛО->ФУНКЦИИ ДЛЯ РАБОТЫ С ОПЛАТОЙ **/
+
+    /**
+     *  Проверка на существование ID кредита в 5 Элементе
+     * @param int $creditId
+     * @return int
+     */
+    public function existOplataSAM($creditId)
+    {
+        if (!empty($creditId)) {
+            $res = $this->getTempQuery("SELECT exists(select creditId FROM s_pars_oplata_5 WHERE creditId=$creditId) AS exist", MYSQLI_ASSOC);
+            return (int)$res[0]['exist'];
+        } else return -1;
+    }
+
+    /**
+     * Выбрать id по ID кредита в 5 Элементе
+     * @param int $creditId , Id кредита в 5 Элементе
+     * @return mixed
+     */
+    public function getIdFromCreditIdOplataSAM($creditId)
+    {
+        if (!empty($creditId)) {
+            $res = $this->getTempQuery("SELECT Id FROM s_pars_oplata_5 WHERE creditId=$creditId", MYSQLI_ASSOC);
+            return (int)$res[0]['id'];
+        } else return -1;
+    }
+
+
+    /**
+     * Вставить новую запись в классификатор оплат
+     * @param $creditId, id в 5 элемент
+     * @param $name , наименование
+     */
+    public function insertOplataSAM($creditId, $name)
+    {
+        if (!($stmt = $this->mysql->prepare("INSERT INTO s_pars_oplata_5 (creditId, name) VALUES(?,?)"))
+        ) {
+            echo "Не удалось подготовить запрос: (" . $this->mysql->errno . ") " . $this->mysql->error;
+        }
+        if (!$stmt->bind_param("is", $creditId, $name)
+        ) {
+            echo "Не удалось привязать параметры: (" . $stmt->errno . ") " . $stmt->error;
+        }
+        if (!$stmt->execute()) {
+            echo "Не удалось выполнить запрос: (" . $stmt->errno . ") " . $stmt->error;
+        }
+        return $stmt->insert_id;
+
+    }
+//------------ОКОНЧАНИЕ->ФУНКЦИИ ДЛЯ РАБОТЫ С ОПЛАТОЙ **/
+
+
+//------------НАЧАЛО->ФУНКЦИИ ДЛЯ РАБОТЫ С ЦЕНОЙ **/
+    public function insertCenaSAM($productId,$date,$cena,$oplata_id)
+    {
+        if (!($stmt = $this->mysql->prepare("INSERT INTO s_pars_cena_5 (product_id,date,cena,oplata_id) VALUES(?,?,?,?)"))
+        ) {
+            echo "Не удалось подготовить запрос: (" . $this->mysql->errno . ") " . $this->mysql->error;
+        }
+        if (!$stmt->bind_param("isdi", $productId, $date, $cena, $oplata_id)
+        ) {
+            echo "Не удалось привязать параметры: (" . $stmt->errno . ") " . $stmt->error;
+        }
+        if (!$stmt->execute()) {
+            echo "Не удалось выполнить запрос: (" . $stmt->errno . ") " . $stmt->error;
+        }
+        return $stmt->insert_id;
+
+    }
+
+
+
+//------------ОКОНЧАНИЕ->ФУНКЦИИ ДЛЯ РАБОТЫ С ЦЕНОЙ **/
+
+
+
+
+
 
     public function insertProduct(
         $categoryId,

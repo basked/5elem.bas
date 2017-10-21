@@ -9,7 +9,7 @@ function insertCategoriesFrom5Elem()
     $m = new  \MySqlDB\MySqlDB();
     $catLinks = $p->getCategoriesLinks();
     if (!empty($catLinks)) {
-       // $m->updateAct();
+        // $m->updateAct();
         /*!! ПРОДУМАТЬ КАК ОБНОВИТЬ СУЩЕСТВУЮЩИЕ КАТЕГОРИИ*/
         for ($i = 0; $i < count($catLinks); $i++) {
             if ($m->existCategorySAM($catLinks[$i]['id']) == 0) {
@@ -34,10 +34,13 @@ function updateCategoriesFrom5Elem()
             $cd = $p->getCategotyDesc($catEmptyRoot['catId']);
             if (!empty($cd[UF_IB_RELATED_ID])) {
                 if ($m->existCategorySAM($cd[UF_IB_RELATED_ID]) == 0) {
-                    $m->insertCategorySAM($cd[NAME], $cd[UF_IB_RELATED_ID], 1, 1);
+                    $rootId=$m->insertCategorySAM($cd[NAME], $cd[UF_IB_RELATED_ID], 1, 1);
+                } else {
+                    $rootId=$m->getIdCategorySAM($cd[UF_IB_RELATED_ID]);
                 }
+                $m->updateRootId($catEmptyRoot['catId'],  $rootId);
             }
-            $m->updateRootId($catEmptyRoot['catId'], $cd[UF_IB_RELATED_ID]);
+
         }
     }
     $m->close();
@@ -53,6 +56,7 @@ function insertProductFrom5Elem()
     $p->setCurlOptStatic();
     $p->setCurlOptURL('https://5element.by/ajax/catalog_category_list.php?SECTION_ID=0');
     $m = new  \MySqlDB\MySqlDB();
+    $main_id = $m->insertMainSAM(date("d.m.Y H:i:s"), 1);
     $catUniRoots = $m->getUniqueRootIdCategorySAM(); // уникальные Id главных категорий товаров
     foreach ($catUniRoots as $catUniRoot) {
         $curPage = 1;
@@ -67,30 +71,39 @@ function insertProductFrom5Elem()
             $html = $p::getDecodeHTML($html);
             $pq = phpQuery::newDocument($html);
             $products = $pq->find('.spec-product.js-product-item');
-           if (!empty($products)) {
-               foreach ($products as $product) {
-                   $productDesc[$i]['name'] = trim(pq($product)->find('.spec-product-middle-title>a')->text());
-                   $productDesc[$i]['prodId'] = pq($product)->attr('data-id');
-                   $productDesc[$i]['price'] = trim(str_replace(' ', '', pq($product)->find('span._price')->text()));
-                   $productDesc[$i]['code'] = trim(str_replace('Код товара:', '', pq($product)->find('.product-middle-patio-code')->text()));
-                   $productDesc[$i]['oplata_creditId'] = pq($product)->find('.product-item-sticker.product-item-sticker-credit.js-sticker')->attr('data-action-id');
-                   $productDesc[$i]['oplata_name'] = pq($product)->find('.product-item-sticker.product-item-sticker-credit.js-sticker>img')->attr('title');
-                   // делаем проверку на существование кредита
-                   if (!empty($productDesc[$i]['oplata_creditId'])) {
-                       if ($m->existOplataSAM($productDesc[$i]['oplata_creditId']) == 0) {
-
-                          $oplataId=$m->insertOplataSAM($productDesc[$i]['oplata_creditId'], $productDesc[$i]['oplata_name']);
-                       }
-                   }
-                   $productId = $m->insertProductSAM($m->getIdCategorySAM($catUniRoot['catId']), $productDesc[$i]['prodId'], $productDesc[$i]['name'], $productDesc[$i]['code']/*, null, $productDesc[$i]['price']*/);
-                   $m->insertCenaSAM($productId,date("d.m.Y H:i:s"),$productDesc[$i]['price'],$oplataId);
-                   $i++;
-               }
-           }
+            if (!empty($products)) {
+                foreach ($products as $product) {
+                    $productDesc[$i]['name'] = trim(pq($product)->find('.spec-product-middle-title>a')->text());
+                    $productDesc[$i]['prodId'] = pq($product)->attr('data-id');
+                    $productDesc[$i]['price'] = trim(str_replace(' ', '', pq($product)->find('span._price')->text()));
+                    $productDesc[$i]['code'] = trim(str_replace('Код товара:', '', pq($product)->find('.product-middle-patio-code')->text()));
+                    $productDesc[$i]['oplata_creditId'] = pq($product)->find('.product-item-sticker.product-item-sticker-credit.js-sticker')->attr('data-action-id');
+                    $productDesc[$i]['oplata_name'] = pq($product)->find('.product-item-sticker.product-item-sticker-credit.js-sticker>img')->attr('title');
+                    // делаем проверку на существование кредита
+                    if (!empty($productDesc[$i]['oplata_creditId'])) {
+                        if ($m->existOplataSAM($productDesc[$i]['oplata_creditId']) == 0) {
+                            $oplataId = $m->insertOplataSAM($productDesc[$i]['oplata_creditId'], $productDesc[$i]['oplata_name']);
+                        } else {
+                            $oplataId = $m->getIdFromCreditIdOplataSAM($productDesc[$i]['oplata_creditId']);
+                        };
+                    }
+                    // делаем проверку на существование продукции
+                    if (!empty($productDesc[$i]['prodId'])) {
+                        if ($m->existProductSAM($productDesc[$i]['prodId']) == 0) {
+                            $productId = $m->insertProductSAM($m->getIdCategorySAM($catUniRoot['catId']), $productDesc[$i]['prodId'], $productDesc[$i]['name'], $productDesc[$i]['code']/*, null, $productDesc[$i]['price']*/);
+                        } else {
+                            $productId = $m->getIdFromProdIdProductSAM($productDesc[$i]['prodId']);
+                        };
+                    }
+                    $m->insertCenaSAM($productId, date("d.m.Y H:i:s"), $productDesc[$i]['price'], $oplataId, $main_id);
+                    $i++;
+                }
+            }
             $curPage++;
         } while ($curPage <= $maxPage);
-        echo "ID категории: " . $catUniRoot['rootId'] . ". Кол-во=" . $i . "\n\r";
+        echo "ID категории: " . $catUniRoot['catId'] . ". Кол-во=" . $i . "\n\r";
     }
+
     $m->close();
     $p->curlClose();
     echo date("H:i:s") . "\n\r";

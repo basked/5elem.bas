@@ -73,6 +73,7 @@ class MySqlDB
         }
         return $this->mysql->affected_rows;
     }
+
 //-------------НАЧАЛО->ФУНКЦИИ ДЛЯ РАБОТЫ С ЗАСАПУСКОМ ПАРСИНГА  **/
     public function insertMainSAM($date, $act)
     {
@@ -109,7 +110,9 @@ class MySqlDB
         if (!empty($catId)) {
             $res = $this->getTempQuery("SELECT exists(select catId FROM s_pars_category_5 WHERE catId=$catId) AS exist", MYSQLI_ASSOC);
             return (int)$res[0]['exist'];
-        } else return -1;
+        } else {
+            return -1;
+        };
     }
 
 
@@ -209,6 +212,29 @@ class MySqlDB
 //-------------НАЧАЛО->ФУНКЦИИ ДЛЯ РАБОТЫ С ПРОДУКТАМИ **/
 
     /**
+     *  Проверка на существование ID продукта в 5 Элементе
+     * @param int $creditId
+     * @return int
+     */
+    public function existProductSAM($prodId)
+    {
+        if (!empty($prodId)) {
+            $res = $this->getTempQuery("SELECT exists(select prodId FROM s_pars_product_5 WHERE prodId=$prodId) AS exist", MYSQLI_ASSOC);
+            return (int)$res[0]['exist'];
+        } else {
+            return -1;
+        }
+    }
+
+    public function getIdFromProdIdProductSAM($prodId)
+    {
+        if (!empty($prodId)) {
+            $res = $this->getTempQuery("SELECT id FROM s_pars_product_5 WHERE prodId=$prodId", MYSQLI_ASSOC);
+            return (int)$res[0]['id'];
+        } else return -1;
+    }
+
+    /**
      * Вставить новую запись в классификатор категорий
      * @param $name , наименование
      * @param $catId , id в 5 элемент
@@ -257,7 +283,9 @@ class MySqlDB
         if (!empty($creditId)) {
             $res = $this->getTempQuery("SELECT exists(select creditId FROM s_pars_oplata_5 WHERE creditId=$creditId) AS exist", MYSQLI_ASSOC);
             return (int)$res[0]['exist'];
-        } else return -1;
+        } else {
+            return -1;
+        }
     }
 
     /**
@@ -268,18 +296,21 @@ class MySqlDB
     public function getIdFromCreditIdOplataSAM($creditId)
     {
         if (!empty($creditId)) {
-            $res = $this->getTempQuery("SELECT Id FROM s_pars_oplata_5 WHERE creditId=$creditId", MYSQLI_ASSOC);
+            $res = $this->getTempQuery("SELECT id FROM s_pars_oplata_5 WHERE creditId=$creditId", MYSQLI_ASSOC);
             return (int)$res[0]['id'];
-        } else return -1;
+        } else {
+            return -1;
+        }
     }
 
 
     /**
      * Вставить новую запись в классификатор оплат
-     * @param $creditId, id в 5 элемент
+     * @param $creditId , id в 5 элемент
      * @param $name , наименование
      */
-    public function insertOplataSAM($creditId, $name)
+    public
+    function insertOplataSAM($creditId, $name)
     {
         if (!($stmt = $this->mysql->prepare("INSERT INTO s_pars_oplata_5 (creditId, name) VALUES(?,?)"))
         ) {
@@ -295,17 +326,19 @@ class MySqlDB
         return $stmt->insert_id;
 
     }
+
 //------------ОКОНЧАНИЕ->ФУНКЦИИ ДЛЯ РАБОТЫ С ОПЛАТОЙ **/
 
 
 //------------НАЧАЛО->ФУНКЦИИ ДЛЯ РАБОТЫ С ЦЕНОЙ **/
-    public function insertCenaSAM($productId,$date,$cena,$oplata_id)
+    public
+    function insertCenaSAM($productId, $date, $cena, $oplata_id, $main_id)
     {
-        if (!($stmt = $this->mysql->prepare("INSERT INTO s_pars_cena_5 (product_id,date,cena,oplata_id) VALUES(?,?,?,?)"))
+        if (!($stmt = $this->mysql->prepare("INSERT INTO s_pars_cena_5 (product_id,date,cena,oplata_id,main_id) VALUES(?,?,?,?,?)"))
         ) {
             echo "Не удалось подготовить запрос: (" . $this->mysql->errno . ") " . $this->mysql->error;
         }
-        if (!$stmt->bind_param("isdi", $productId, $date, $cena, $oplata_id)
+        if (!$stmt->bind_param("isdii", $productId, $date, $cena, $oplata_id, $main_id)
         ) {
             echo "Не удалось привязать параметры: (" . $stmt->errno . ") " . $stmt->error;
         }
@@ -317,15 +350,11 @@ class MySqlDB
     }
 
 
-
 //------------ОКОНЧАНИЕ->ФУНКЦИИ ДЛЯ РАБОТЫ С ЦЕНОЙ **/
 
 
-
-
-
-
-    public function insertProduct(
+    public
+    function insertProduct(
         $categoryId,
         $prodId,
         $prodName,
@@ -369,7 +398,8 @@ class MySqlDB
         }
     }
 
-    public function insertCategory(
+    public
+    function insertCategory(
         $catId,
         $catName,
         $sectId,
@@ -422,7 +452,8 @@ class MySqlDB
         }
     }
 
-    public function InsertMain(
+    public
+    function InsertMain(
         $name,
         $pars_date,
         $act)
@@ -454,7 +485,8 @@ class MySqlDB
         }
     }
 
-    public function getCategories()
+    public
+    function getCategories()
     {
         $query = "SELECT DISTINCT
                         catId, catName

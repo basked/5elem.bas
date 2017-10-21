@@ -138,8 +138,8 @@ function getProductDetailFrom5Elem()
     echo date("H:i:s") . "\n\r";
 }
 
-//insertCategoriesFrom5Elem();
-//updateCategoriesFrom5Elem();
+insertCategoriesFrom5Elem();
+updateCategoriesFrom5Elem();
 //getProductDetailFrom5Elem();
 //
 //

@@ -1,4 +1,5 @@
 <?php
+set_time_limit (1800);
 require_once 'Parse5Elem.php';
 require_once 'MySqlDB.php';
 
@@ -13,7 +14,7 @@ function insertCategoriesFrom5Elem()
         /*!! ПРОДУМАТЬ КАК ОБНОВИТЬ СУЩЕСТВУЮЩИЕ КАТЕГОРИИ*/
         for ($i = 0; $i < count($catLinks); $i++) {
             if ($m->existCategorySAM($catLinks[$i]['id']) == 0) {
-                $m->insertCategorySAM(mb_convert_encoding ($catLinks[$i]['name'], $catLinks[$i]['id'],'Windows-1251'), -1, 0);
+                $m->insertCategorySAM(mb_convert_encoding($catLinks[$i]['name'],'Windows-1251','auto'), $catLinks[$i]['id'], -1, 0);
             } else $p::logToFile('export.html', 'Кетегория с ID=' . $catLinks[$i]['id'] . ' существует в s_p_category_5' . '\n\r');
         }
     }
@@ -34,7 +35,7 @@ function updateCategoriesFrom5Elem()
             $cd = $p->getCategotyDesc($catEmptyRoot['catId']);
             if (!empty($cd[UF_IB_RELATED_ID])) {
                 if ($m->existCategorySAM($cd[UF_IB_RELATED_ID]) == 0) {
-                    $rootId=$m->insertCategorySAM(mb_convert_encoding($cd[NAME],'Windows-1251'), $cd[UF_IB_RELATED_ID], 1, 1);
+                    $rootId=$m->insertCategorySAM(mb_convert_encoding($cd[NAME],'Windows-1251','auto'), $cd[UF_IB_RELATED_ID], 1, 1);
                 } else {
                     $rootId=$m->getIdCategorySAM($cd[UF_IB_RELATED_ID]);
                 }
@@ -82,7 +83,7 @@ function insertProductFrom5Elem()
                     // делаем проверку на существование кредита
                     if (!empty($productDesc[$i]['oplata_creditId'])) {
                         if ($m->existOplataSAM($productDesc[$i]['oplata_creditId']) == 0) {
-                            $oplataId = $m->insertOplataSAM($productDesc[$i]['oplata_creditId'],mb_convert_encoding($productDesc[$i]['oplata_name'],'Windows-1251'));
+                            $oplataId = $m->insertOplataSAM($productDesc[$i]['oplata_creditId'],mb_convert_encoding($productDesc[$i]['oplata_name'],'Windows-1251','auto'));
                         } else {
                             $oplataId = $m->getIdFromCreditIdOplataSAM($productDesc[$i]['oplata_creditId']);
                         };
@@ -90,7 +91,7 @@ function insertProductFrom5Elem()
                     // делаем проверку на существование продукции
                     if (!empty($productDesc[$i]['prodId'])) {
                         if ($m->existProductSAM($productDesc[$i]['prodId']) == 0) {
-                            $productId = $m->insertProductSAM($m->getIdCategorySAM($catUniRoot['catId']), $productDesc[$i]['prodId'],mb_convert_encoding( $productDesc[$i]['name'],'Windows-1251'), $productDesc[$i]['code']/*, null, $productDesc[$i]['price']*/);
+                            $productId = $m->insertProductSAM($m->getIdCategorySAM($catUniRoot['catId']), $productDesc[$i]['prodId'],mb_convert_encoding( $productDesc[$i]['name'],'Windows-1251','auto'), $productDesc[$i]['code']/*, null, $productDesc[$i]['price']*/);
                         } else {
                             $productId = $m->getIdFromProdIdProductSAM($productDesc[$i]['prodId']);
                         };
@@ -138,8 +139,8 @@ function getProductDetailFrom5Elem()
     echo date("H:i:s") . "\n\r";
 }
 
-///insertCategoriesFrom5Elem();
-//updateCategoriesFrom5Elem();
-//getProductDetailFrom5Elem();
-//insertProductFrom5Elem();
+insertCategoriesFrom5Elem();
+updateCategoriesFrom5Elem();
+getProductDetailFrom5Elem();
+insertProductFrom5Elem();
 

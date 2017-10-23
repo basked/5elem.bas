@@ -1,4 +1,4 @@
-create table s_pars_category_5
+create or REPLACE table s_pars_category_5
 (
   id int auto_increment
     primary key,
@@ -12,7 +12,7 @@ create table s_pars_category_5
   comment 'Инфо о парсинге'
 ;
 
-create table s_pars_cena_5
+create or REPLACE table s_pars_cena_5
 (
   id int auto_increment
     primary key,
@@ -35,7 +35,7 @@ create index s_pars_cena_5_s_pars_main_5_id_fk
   on s_pars_cena_5 (main_id)
 ;
 
-create table s_pars_main_5
+create or REPLACE table s_pars_main_5
 (
   id int auto_increment comment 'Ид парсинга'
     primary key,
@@ -50,7 +50,7 @@ alter table s_pars_cena_5
 foreign key (main_id) references user1111058_sam.s_pars_main_5 (id)
 ;
 
-create table s_pars_oplata_5
+create or REPLACE table s_pars_oplata_5
 (
   id int auto_increment
     primary key,
@@ -66,7 +66,7 @@ alter table s_pars_cena_5
 foreign key (oplata_id) references user1111058_sam.s_pars_oplata_5 (id)
 ;
 
-create table s_pars_product_5
+create or REPLACE table s_pars_product_5
 (
   id int auto_increment comment 'ИД'
     primary key,

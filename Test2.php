@@ -1,5 +1,7 @@
 <?php
-set_time_limit(1800);
+error_reporting(E_ALL);
+set_time_limit(10000); // время выполнения скрипта
+header("Content-type: text/html; charset = utf-8"); // кодировка utf-8
 require_once 'Parse5Elem.php';
 require_once 'MySqlDB.php';
 
@@ -14,8 +16,8 @@ function insertCategoriesFrom5Elem ()
         /*!! ПРОДУМАТЬ КАК ОБНОВИТЬ СУЩЕСТВУЮЩИЕ КАТЕГОРИИ*/
         for ($i = 0; $i < count($catLinks); $i++) {
             if ($m->existCategorySAM($catLinks[$i]['id']) == 0) {
-                // $m->insertCategorySAM(mb_convert_encoding($catLinks[$i]['name'],'Windows-1251','auto'), $catLinks[$i]['id'], -1, 0);
-                $m->insertCategorySAM($catLinks[$i]['name'], $catLinks[$i]['id'], -1, 0);
+                $m->insertCategorySAM(mb_convert_encoding($catLinks[$i]['name'],'Windows-1251','auto'), $catLinks[$i]['id'], -1, 0);
+                //  $m->insertCategorySAM($catLinks[$i]['name'], $catLinks[$i]['id'], -1, 0);
             } else $p::logToFile('export.html', 'Кетегория с ID=' . $catLinks[$i]['id'] . ' существует в s_p_category_5' . '\n\r');
         }
     }
@@ -36,8 +38,8 @@ function updateCategoriesFrom5Elem ()
             $cd = $p->getCategotyDesc($catEmptyRoot['catId']);
             if (!empty($cd[UF_IB_RELATED_ID])) {
                 if ($m->existCategorySAM($cd[UF_IB_RELATED_ID]) == 0) {
-                    // $rootId=$m->insertCategorySAM(mb_convert_encoding($cd[NAME],'Windows-1251','auto'), $cd[UF_IB_RELATED_ID], 1, 1);
-                    $rootId = $m->insertCategorySAM($cd[NAME], $cd[UF_IB_RELATED_ID], 1, 1);
+                    $rootId=$m->insertCategorySAM(mb_convert_encoding($cd[NAME],'Windows-1251','auto'), $cd[UF_IB_RELATED_ID], 1, 1);
+                    //  $rootId = $m->insertCategorySAM($cd[NAME], $cd[UF_IB_RELATED_ID], 1, 1);
                 } else {
                     $rootId = $m->getIdCategorySAM($cd[UF_IB_RELATED_ID]);
                 }
@@ -80,7 +82,9 @@ function insertProductFrom5Elem ($out_main_id = 0, $p_begCatId = 0)
             $pq = phpQuery::newDocument($html);
             $products = $pq->find('.spec-product.js-product-item');
             if (!empty($products)) {
+                ob_start();
                 foreach ($products as $product) {
+
                     $productDesc[$i]['name'] = trim(pq($product)->find('.spec-product-middle-title>a')->text());
                     $productDesc[$i]['prodId'] = pq($product)->attr('data-id');
                     $productDesc[$i]['price'] = trim(str_replace(' ', '', pq($product)->find('span._price')->text()));
@@ -90,8 +94,8 @@ function insertProductFrom5Elem ($out_main_id = 0, $p_begCatId = 0)
                     // делаем проверку на существование кредита
                     if (!empty($productDesc[$i]['oplata_creditId'])) {
                         if ($m->existOplataSAM($productDesc[$i]['oplata_creditId']) == 0) {
-                            // $oplataId = $m->insertOplataSAM($productDesc[$i]['oplata_creditId'],mb_convert_encoding($productDesc[$i]['oplata_name'],'Windows-1251','auto'));
-                            $oplataId = $m->insertOplataSAM($productDesc[$i]['oplata_creditId'], $productDesc[$i]['oplata_name']);
+                            $oplataId = $m->insertOplataSAM($productDesc[$i]['oplata_creditId'],mb_convert_encoding($productDesc[$i]['oplata_name'],'Windows-1251','auto'));
+                            //   $oplataId = $m->insertOplataSAM($productDesc[$i]['oplata_creditId'], $productDesc[$i]['oplata_name']);
                         } else {
                             $oplataId = $m->getIdFromCreditIdOplataSAM($productDesc[$i]['oplata_creditId']);
                         };
@@ -99,21 +103,25 @@ function insertProductFrom5Elem ($out_main_id = 0, $p_begCatId = 0)
                     // делаем проверку на существование продукции
                     if (!empty($productDesc[$i]['prodId'])) {
                         if ($m->existProductSAM($productDesc[$i]['prodId']) == 0) {
-                            // $productId = $m->insertProductSAM($m->getIdCategorySAM($catUniRoot['catId']), $productDesc[$i]['prodId'],mb_convert_encoding( $productDesc[$i]['name'],'Windows-1251','auto'), $productDesc[$i]['code']/*, null, $productDesc[$i]['price']*/);
-                            $productId = $m->insertProductSAM($m->getIdCategorySAM($catUniRoot['catId']), $productDesc[$i]['prodId'], $productDesc[$i]['name'], $productDesc[$i]['code']/*, null, $productDesc[$i]['price']*/);
+                            $productId = $m->insertProductSAM($m->getIdCategorySAM($catUniRoot['catId']), $productDesc[$i]['prodId'],mb_convert_encoding( $productDesc[$i]['name'],'Windows-1251','auto'), $productDesc[$i]['code']/*, null, $productDesc[$i]['price']*/);
+                            //  $productId = $m->insertProductSAM($m->getIdCategorySAM($catUniRoot['catId']), $productDesc[$i]['prodId'], $productDesc[$i]['name'], $productDesc[$i]['code']/*, null, $productDesc[$i]['price']*/);
                         } else {
                             $productId = $m->getIdFromProdIdProductSAM($productDesc[$i]['prodId']);
                         };
                     }
                     $m->insertCenaSAM($productId, $productDesc[$i]['price'], $oplataId, $main_id);
                     $i++;
+
                 }
+                ob_flush();
             }
             $curPage++;
             phpQuery::unloadDocuments();
             gc_collect_cycles();
+
         } while ($curPage <= $maxPage);
         $m->inserLogSAM($catUniRoot['catId'], "ID_MAIN=$main_id; Кол-во=$i");
+
     }
     $m->updateDateEndMainSAM($main_id, date("Y-m-d H:i:s"));
     $m->close();
@@ -152,22 +160,31 @@ function getProductDetailFrom5Elem ()
 
 //insertCategoriesFrom5Elem();
 //updateCategoriesFrom5Elem();
-//getProductDetailFrom5Elem();
-$m = new  \MySqlDB\MySqlDB();
-$lastCena = $m->getLastRecordCenaSAM();
-var_dump($lastCena);
-$forDelCens = $m->getRecordsForDeleteCenaSAM($lastCena['main_id'], $lastCena['catId']);
-var_dump($forDelCens);
-foreach ($forDelCens as $forDelCen) {
-    $m->deleteCenaSAM($forDelCen['id']);
+try{
+    $m = new  \MySqlDB\MySqlDB();
+    $lastCena = $m->getLastRecordCenaSAM();
+    $forDelCens = $m->getRecordsForDeleteCenaSAM($lastCena['main_id'], $lastCena['catId']);
+    foreach ($forDelCens as $forDelCen) {
+        $m->deleteCenaSAM($forDelCen['id']);
+    }
+    $m->close();
+    if (!empty($forDelCens)) {
+        insertProductFrom5Elem($lastCena['main_id'], $lastCena['catId']);
+    } else {
+        insertProductFrom5Elem(0, 0);
+    }} catch (Exception $e) {
+    // код который может обработать исключение
+    echo "FATALL_ERRRRORRRRRR".$e->getMessage();
+    $m = new  \MySqlDB\MySqlDB();
+    $lastCena = $m->getLastRecordCenaSAM();
+    $forDelCens = $m->getRecordsForDeleteCenaSAM($lastCena['main_id'], $lastCena['catId']);
+    foreach ($forDelCens as $forDelCen) {
+        $m->deleteCenaSAM($forDelCen['id']);
+    }
+    $m->close();
+    if (!empty($forDelCens)) {
+        insertProductFrom5Elem($lastCena['main_id'], $lastCena['catId']);
+    } else {
+        insertProductFrom5Elem(0, 0);
+    }
 }
-$m->close();
-if (!empty($forDelCens)) {
-    insertProductFrom5Elem($lastCena['main_id'], $lastCena['catId']);
-} else {
-    insertProductFrom5Elem(0, 0);
-}
-
-
-//
-

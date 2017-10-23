@@ -263,19 +263,19 @@ class Parse5Elem
     {
 
         return array(   'deliveryGetState[tab]'=>'shop',
-                        'deliveryGetState[shopView]'=>'list',
-                        'deliveryGetState[productId]'=>$productId,
-                        'deliveryGetState[forCheckout]'=>0,
-                        'deliveryGetState[mkpShowAll]'=>false,
-                        'deliveryGetState[showMap]'=>false,
-                        'deliveryGetState[data][shopLocationId]'=>31379,
-                        'deliveryGetState[data][homeLocationId]'=>31379,
-                        'deliveryGetState[data][tab]'=>'shop',
-                        'deliveryGetState[data][shopId]'=>0,
-                        'deliveryGetState[data][deliveryProductId]'=>0,
-                        'deliveryGetState[data][deliveryProductCategoryId]'=>0,
-                        'deliveryGetState[data][deliveryShopId]'=>0,
-                        'deliveryGetState[data][price]'=>0);
+            'deliveryGetState[shopView]'=>'list',
+            'deliveryGetState[productId]'=>$productId,
+            'deliveryGetState[forCheckout]'=>0,
+            'deliveryGetState[mkpShowAll]'=>false,
+            'deliveryGetState[showMap]'=>false,
+            'deliveryGetState[data][shopLocationId]'=>31379,
+            'deliveryGetState[data][homeLocationId]'=>31379,
+            'deliveryGetState[data][tab]'=>'shop',
+            'deliveryGetState[data][shopId]'=>0,
+            'deliveryGetState[data][deliveryProductId]'=>0,
+            'deliveryGetState[data][deliveryProductCategoryId]'=>0,
+            'deliveryGetState[data][deliveryShopId]'=>0,
+            'deliveryGetState[data][price]'=>0);
     }
 
     /**

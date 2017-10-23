@@ -101,6 +101,8 @@ function insertProductFrom5Elem()
                 }
             }
             $curPage++;
+            phpQuery::unloadDocuments();
+            gc_collect_cycles();
         } while ($curPage <= $maxPage);
         echo "ID категории: " . $catUniRoot['catId'] . ". Кол-во=" . $i . "\n\r";
     }
@@ -141,6 +143,6 @@ function getProductDetailFrom5Elem()
 
 insertCategoriesFrom5Elem();
 updateCategoriesFrom5Elem();
-getProductDetailFrom5Elem();
+//getProductDetailFrom5Elem();
 insertProductFrom5Elem();
 

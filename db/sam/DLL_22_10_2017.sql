@@ -98,9 +98,20 @@ foreign key (product_id) references user1111058_sam.s_pars_product_5 (id)
 /*
 -- ЗАПРОС НА ВЫБОРКУ ВСЕХ ДАННЫХ;
 
-select c.name, p.name, p.cod, o.name, cen.cena
-from s_pars_cena_5 cen, s_pars_category_5 c, s_pars_product_5 p, s_pars_oplata_5 o
-where  cen.product_id=p.id and c.id=p.category_id and cen.oplata_id=o.id and main_id=(select max(id) from s_pars_main_5)
-order by 1,2;
+SELECT
+    m.id, m.date, m.date_end, c.name, p.name, o.name
+FROM
+    s_pars_main_5 m,
+    s_pars_category_5 c,
+    user1111058_sam.s_pars_product_5 p,
+    s_pars_cena_5 cn,
+    s_pars_oplata_5 o
+WHERE
+    m.id = cn.main_id
+        AND c.id = p.category_id
+        AND cn.product_id = p.id
+        AND cn.oplata_id = o.id
+        AND cn.main_id in (SELECT MAX(id) FROM s_pars_main_5)
+order by 1,4 desc,5
 
 */

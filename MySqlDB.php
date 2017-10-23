@@ -471,6 +471,30 @@ class MySqlDB
 
 //------------ОКОНЧАНИЕ->ФУНКЦИИ ДЛЯ РАБОТЫ С ЦЕНОЙ **/
 
+//------------НАЧАЛО->ФУНКЦИИ ДЛЯ РАБОТЫ С ТЕСТОВЫЕ ФУНКЦИИ **/
+
+    public function getCurrentParsingASAM ()
+    {
+        $res = $this->getTempQuery("SELECT 
+                                            m.id, m.date, m.date_end, c.name cat_name, p.name prod_name, o.name opl_name
+                                        FROM
+                                            s_pars_main_5 m,
+                                            s_pars_category_5 c,
+                                            user1111058_sam.s_pars_product_5 p,
+                                            s_pars_cena_5 cn,
+                                            s_pars_oplata_5 o
+                                        WHERE
+                                            m.id = cn.main_id
+                                                AND c.id = p.category_id
+                                                AND cn.product_id = p.id
+                                                AND cn.oplata_id = o.id
+                                                AND cn.main_id in (SELECT MAX(id) FROM s_pars_main_5)
+                                        order by 1,4 desc,5 ", MYSQLI_ASSOC);
+       return $res;
+    }
+
+//------------ОКОНЧАНИ->ФУНКЦИИ ДЛЯ РАБОТЫ С ТЕСТОВЫЕ ФУНКЦИИ **/
+
 
     public
     function insertProduct (

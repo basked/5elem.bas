@@ -18,7 +18,7 @@ class MySqlDB
     const USER = 'root';
     const PASS = '';
     const DB = 'user1111058_sam';
-    public $mysql = nil;
+
 
     /**
      * MySqlDB constructor.
@@ -181,7 +181,6 @@ class MySqlDB
         };
     }
 
-
     /**
      * Выбрать все уникальные идентификаторы категорий, которые используются в 5 Элементе
      * @return mixed
@@ -189,6 +188,15 @@ class MySqlDB
     public function getUniqueRootIdCategorySAM ($catId)
     {
         return $this->getTempQuery("SELECT DISTINCT catId FROM s_pars_category_5 WHERE catId>=$catId and rootId=1 AND act=1 ORDER BY catId ASC", MYSQLI_ASSOC);
+    }
+
+    /**
+     * Выбрать все уникальные идентификаторы категорий, которые используются в 5 Элементе с оффсетом
+     * @return mixed
+     */
+    public function getUniqueRootIdCategoryLimySAM ($offset)
+    {
+        return $this->getTempQuery("SELECT DISTINCT catId FROM s_pars_category_5 WHERE  rootId=1 AND act=1 ORDER BY catId ASC LIMIT 100 OFFSET $offset", MYSQLI_ASSOC);
     }
 
     /**

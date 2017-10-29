@@ -1,3 +1,4 @@
+
 <?php
 
 require_once 'Parse5Elem.php';
@@ -83,4 +84,4 @@ function getProductFromCat ()
 }
 
 //getCategoryDesc();
-getProductFromCat();
+getProductFromCat(); 

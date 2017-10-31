@@ -1,4 +1,5 @@
-<?php
+<?
+error_reporting(E_ALL);
 /**
  * Created by PhpStorm.
  * User: basked
@@ -147,7 +148,9 @@ class Parse5Elem
                 $i++;
             }
         }
+        \phpQuery::unloadDocuments($pq);
         return $arrCategories;
+
     }
 
     /**

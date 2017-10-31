@@ -96,11 +96,11 @@ class MySqlDB
      */
     public function updateDateEndMainSAM ($id, $date_end)
     {
-        if (!($stmt = $this->mysql->prepare("update s_pars_main_5 set date_end=? WHERE id=?"))
+        if (!($stmt = $this->mysql->prepare("UPDATE s_pars_main_5 SET date_end=? WHERE id=?"))
         ) {
             echo "Не удалось подготовить запрос: (" . $this->mysql->errno . ") " . $this->mysql->error;
         }
-        if (!$stmt->bind_param("si",$date_end,$id )
+        if (!$stmt->bind_param("si", $date_end, $id)
         ) {
             echo "Не удалось привязать параметры: (" . $stmt->errno . ") " . $stmt->error;
         }
@@ -117,11 +117,11 @@ class MySqlDB
      */
     public function updateActMainSAM ($act)
     {
-        if (!($stmt = $this->mysql->prepare("update s_pars_main_5 set act=?"))
+        if (!($stmt = $this->mysql->prepare("UPDATE s_pars_main_5 SET act=?"))
         ) {
             echo "Не удалось подготовить запрос: (" . $this->mysql->errno . ") " . $this->mysql->error;
         }
-        if (!$stmt->bind_param("i",$act)
+        if (!$stmt->bind_param("i", $act)
         ) {
             echo "Не удалось привязать параметры: (" . $stmt->errno . ") " . $stmt->error;
         }
@@ -432,19 +432,31 @@ class MySqlDB
 
     public function insertCenaSAM ($productId, $cena, $oplata_id, $main_id)
     {
-        if (!($stmt = $this->mysql->prepare("INSERT INTO s_pars_cena_5 (product_id,cena,oplata_id,main_id) VALUES(?,?,?,?)"))
-        ) {
-            echo "Не удалось подготовить запрос: (" . $this->mysql->errno . ") " . $this->mysql->error;
+        if ($this->existCenaSAM($productId, $main_id) == 0) {
+            if (!($stmt = $this->mysql->prepare("INSERT INTO s_pars_cena_5 (product_id,cena,oplata_id,main_id) VALUES(?,?,?,?)"))
+            ) {
+                echo "Не удалось подготовить запрос: (" . $this->mysql->errno . ") " . $this->mysql->error;
+            }
+            if (!$stmt->bind_param("idii", $productId, $cena, $oplata_id, $main_id)
+            ) {
+                echo "Не удалось привязать параметры: (" . $stmt->errno . ") " . $stmt->error;
+            }
+            if (!$stmt->execute()) {
+                echo "Не удалось выполнить запрос: (" . $stmt->errno . ") " . $stmt->error;
+            }
+            return $stmt->insert_id;
         }
-        if (!$stmt->bind_param("idii", $productId, $cena, $oplata_id, $main_id)
-        ) {
-            echo "Не удалось привязать параметры: (" . $stmt->errno . ") " . $stmt->error;
-        }
-        if (!$stmt->execute()) {
-            echo "Не удалось выполнить запрос: (" . $stmt->errno . ") " . $stmt->error;
-        }
-        return $stmt->insert_id;
 
+    }
+
+    public function existCenaSAM ($productId, $main_id)
+    {
+        if (!empty($productId)) {
+            $res = $this->getTempQuery("SELECT exists(select Id FROM s_pars_cena_5 WHERE product_id=$productId and main_id=$main_id) AS exist", MYSQLI_ASSOC);
+            return (int)$res[0]['exist'];
+        } else {
+            return -1;
+        }
     }
 
     /**
@@ -488,9 +500,9 @@ class MySqlDB
                                                 AND c.id = p.category_id
                                                 AND cn.product_id = p.id
                                                 AND cn.oplata_id = o.id
-                                                AND cn.main_id in (SELECT MAX(id) FROM s_pars_main_5)
-                                        order by 1,4 desc,5 ", MYSQLI_ASSOC);
-       return $res;
+                                                AND cn.main_id IN (SELECT MAX(id) FROM s_pars_main_5)
+                                        ORDER BY 1,4 DESC,5 ", MYSQLI_ASSOC);
+        return $res;
     }
 
 //------------ОКОНЧАНИ->ФУНКЦИИ ДЛЯ РАБОТЫ С ТЕСТОВЫЕ ФУНКЦИИ **/

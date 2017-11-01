@@ -17,7 +17,7 @@
             <form id="status">
                 <input id="run" type="button" class="btn btn-success disabled" onclick="run_p(event)" value="Запустить">
                 <input id="info" type="button" class="btn btn-info" onclick="info_p()" value="Обновить">
-                <input id="test" type="button" class="btn btn-warring" onclick="test_p()" value="Тест">
+             <!--   <input id="test" type="button" class="btn btn-warring" onclick="test_p()" value="Тест">-->
             </form>
         </div>
     </div>
@@ -29,6 +29,7 @@
         <thead>
         <tr>
             <th>№ запуска</th>
+            <th>Время сервера</th>
             <th>Время запуска</th>
             <th>Время окончания</th>
             <th>Обработанно товаров</th>
@@ -40,6 +41,7 @@
         <tbody>
         <tr>
             <td id="id"></td>
+            <td id="time"></td>
             <td id="date"></td>
             <td id="date_end"></td>
             <td id="cnt"></td>

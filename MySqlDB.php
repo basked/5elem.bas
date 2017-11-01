@@ -530,7 +530,7 @@ class MySqlDB
     public function getCurrentParsingSAM ()
     {
         $res = $this->getTempQuery("SELECT 
-                                            m.id, m.date, m.date_end, count(*) cnt ,m.act,m.thread
+                                            m.id, m.date, m.date_end, count(*) cnt ,m.act,m.thread,current_timestamp time_serv
                                         FROM
                                             s_pars_main_5 m,
                                             s_pars_category_5 c,

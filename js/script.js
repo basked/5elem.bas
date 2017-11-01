@@ -24,6 +24,7 @@ function info_p(e) {
         dataType: "json",
         success: function (data) {
             id = data[0].id;
+            time_serv = data[0].time_serv;
             date = data[0].date;
             date_end = data[0].date_end;
             cnt = data[0].cnt;
@@ -32,7 +33,7 @@ function info_p(e) {
         }
     });
     var id, date, date_end, cnt, act;
-    $("#stat_body > tbody:last").append("<tr><td>" + id + "</td><td>" + date + "</td><td>" + date_end + "</td><td>" + cnt + "</td><td>" + act + "</td><td>" + thread + "</td></tr>");
+    $("#stat_body > tbody:last").append("<tr><td>" + id + "</td><td>" + time_serv + "</td><td>" + date + "</td><td>" + date_end + "</td><td>" + cnt + "</td><td>" + act + "</td><td>" + thread + "</td></tr>");
 
     if (act == 1) {
         enable_run_p();

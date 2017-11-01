@@ -1,5 +1,5 @@
 <?
-error_reporting(E_ALL);
+namespace Parse5Elem;
 /**
  * Created by PhpStorm.
  * User: basked
@@ -7,7 +7,7 @@ error_reporting(E_ALL);
  * Time: 11:48
  */
 
-namespace Parse5Elem;
+
 
 require_once('phpQuery/phpQuery.php'); // подключаем phpQuery
 require_once('libs/helpers.php'); // подключаем файл для вывода отладочной инфы
@@ -38,6 +38,7 @@ class Parse5Elem
     {
         $this->html = '';
         $this->ch = curl_init($url);
+        Parse5Elem::logToFile('log.txt',"ParsseElem Construct= $url");
     }
 
     public static function getDecodeHTML ($response)
@@ -115,7 +116,7 @@ class Parse5Elem
                 echo "Ошибка открытия файла ($fileName)!";
                 exit();
             }
-            if (fwrite($handle, $context) === FALSE) {
+            if (fwrite($handle,  date("H:i:s").' '.$context.PHP_EOL) === FALSE) {
                 echo "Ошибка записи содержимого в файл ($fileName)";
                 exit();
             }
@@ -148,7 +149,7 @@ class Parse5Elem
                 $i++;
             }
         }
-        \phpQuery::unloadDocuments($pq);
+      \phpQuery::unloadDocuments($pq);
         return $arrCategories;
 
     }
@@ -245,7 +246,7 @@ class Parse5Elem
      * @param $itemsPerPage
      * @return array
      */
-    public function getPostDataCat ($categoryId, $currentPage, $itemsPerPage)
+    public static function getPostDataCat ($categoryId, $currentPage, $itemsPerPage)
     {
         return array('categoryId' => (int)$categoryId,
             'currentPage' => (int)$currentPage,

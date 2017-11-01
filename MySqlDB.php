@@ -493,14 +493,14 @@ class MySqlDB
 
 //------------НАЧАЛО->ФУНКЦИИ ДЛЯ РАБОТЫ С ТЕСТОВЫЕ ФУНКЦИИ **/
 
-    public function getCurrentParsingASAM ()
+    public function getCurrentParsingSAM ()
     {
         $res = $this->getTempQuery("SELECT 
                                             m.id, m.date, m.date_end, c.name cat_name, p.name prod_name, o.name opl_name
                                         FROM
                                             s_pars_main_5 m,
                                             s_pars_category_5 c,
-                                            user1111058_sam.s_pars_product_5 p,
+                                            s_pars_product_5 p,
                                             s_pars_cena_5 cn,
                                             s_pars_oplata_5 o
                                         WHERE

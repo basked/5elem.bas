@@ -13,7 +13,7 @@
     <div class="row">
         <div class="col-sm-12">
             <h1>Управление <? echo "CompanySam.by"; ?></h1>
-            <p>This is some text.</p>
+            <p>Запус скрипта</p>
             <form action="TestCurl.php">
                 <input type="submit" class="btn btn-success disabled" value="Запустить">
             </form>

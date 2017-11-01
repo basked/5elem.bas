@@ -1,14 +1,13 @@
-<?
-namespace Parse5Elem;
+<?php
 /**
  * Created by PhpStorm.
  * User: basked
- * Date: 10.10.2017
+ * Date: 10.10.2017 
  * Time: 11:48
  */
 
-
-
+namespace Parse5Elem;
+//ini_set('max_execution_time', 1800);
 require_once('phpQuery/phpQuery.php'); // подключаем phpQuery
 require_once('libs/helpers.php'); // подключаем файл для вывода отладочной инфы
 
@@ -38,7 +37,6 @@ class Parse5Elem
     {
         $this->html = '';
         $this->ch = curl_init($url);
-        Parse5Elem::logToFile('log.txt',"ParsseElem Construct= $url");
     }
 
     public static function getDecodeHTML ($response)
@@ -92,7 +90,7 @@ class Parse5Elem
             '\u044e' => 'ю', '\u042e' => 'Ю',
             '\u044f' => 'я', '\u042f' => 'Я',
             '\u2116' => '№',
-            '\u00a0' => ' ',
+			'\u00a0' => ' ',
             '&quot;' => '"',
             '\r' => '',
             '\n' => '<br />',
@@ -116,14 +114,14 @@ class Parse5Elem
                 echo "Ошибка открытия файла ($fileName)!";
                 exit();
             }
-            if (fwrite($handle,  date("H:i:s").' '.$context.PHP_EOL) === FALSE) {
-                echo "Ошибка записи содержимого в файл ($fileName)";
+            if (fwrite($handle, $context) === FALSE) {
+               // echo "Ошибка записи содержимого в файл ($fileName)";
                 exit();
             }
-            echo "Содержимое записано в файл ($fileName)"."\n\r";
+          //  echo "Содержимое записано в файл ($fileName)"."\n\r";
             fclose($handle);
         } else {
-            echo "Файл $fileName не доступен для записи";
+            //echo "Файл $fileName не доступен для записи";
         }
     }
 
@@ -149,9 +147,7 @@ class Parse5Elem
                 $i++;
             }
         }
-      \phpQuery::unloadDocuments($pq);
         return $arrCategories;
-
     }
 
     /**
@@ -246,7 +242,7 @@ class Parse5Elem
      * @param $itemsPerPage
      * @return array
      */
-    public static function getPostDataCat ($categoryId, $currentPage, $itemsPerPage)
+    public function getPostDataCat ($categoryId, $currentPage, $itemsPerPage)
     {
         return array('categoryId' => (int)$categoryId,
             'currentPage' => (int)$currentPage,
@@ -268,19 +264,19 @@ class Parse5Elem
     {
 
         return array(   'deliveryGetState[tab]'=>'shop',
-            'deliveryGetState[shopView]'=>'list',
-            'deliveryGetState[productId]'=>$productId,
-            'deliveryGetState[forCheckout]'=>0,
-            'deliveryGetState[mkpShowAll]'=>false,
-            'deliveryGetState[showMap]'=>false,
-            'deliveryGetState[data][shopLocationId]'=>31379,
-            'deliveryGetState[data][homeLocationId]'=>31379,
-            'deliveryGetState[data][tab]'=>'shop',
-            'deliveryGetState[data][shopId]'=>0,
-            'deliveryGetState[data][deliveryProductId]'=>0,
-            'deliveryGetState[data][deliveryProductCategoryId]'=>0,
-            'deliveryGetState[data][deliveryShopId]'=>0,
-            'deliveryGetState[data][price]'=>0);
+                        'deliveryGetState[shopView]'=>'list',
+                        'deliveryGetState[productId]'=>$productId,
+                        'deliveryGetState[forCheckout]'=>0,
+                        'deliveryGetState[mkpShowAll]'=>false,
+                        'deliveryGetState[showMap]'=>false,
+                        'deliveryGetState[data][shopLocationId]'=>31379,
+                        'deliveryGetState[data][homeLocationId]'=>31379,
+                        'deliveryGetState[data][tab]'=>'shop',
+                        'deliveryGetState[data][shopId]'=>0,
+                        'deliveryGetState[data][deliveryProductId]'=>0,
+                        'deliveryGetState[data][deliveryProductCategoryId]'=>0,
+                        'deliveryGetState[data][deliveryShopId]'=>0,
+                        'deliveryGetState[data][price]'=>0);
     }
 
     /**

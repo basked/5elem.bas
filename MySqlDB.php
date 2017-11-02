@@ -96,11 +96,45 @@ class MySqlDB
      */
     public function updateDateEndMainSAM ($id, $date_end)
     {
-        if (!($stmt = $this->mysql->prepare("UPDATE s_pars_main_5 SET date_end=? WHERE id=?"))
+        if (!($stmt = $this->mysql->prepare("UPDATE s_pars_main_5 SET act=1, date_end=? WHERE id=?"))
         ) {
             echo "Не удалось подготовить запрос: (" . $this->mysql->errno . ") " . $this->mysql->error;
         }
         if (!$stmt->bind_param("si", $date_end, $id)
+        ) {
+            echo "Не удалось привязать параметры: (" . $stmt->errno . ") " . $stmt->error;
+        }
+        if (!$stmt->execute()) {
+            echo "Не удалось выполнить запрос: (" . $stmt->errno . ") " . $stmt->error;
+        }
+        return $stmt->affected_rows;
+    }
+
+
+    /**
+     * Возврачает количество потоков для ID парсинга
+     * @param int $id
+     * @return int
+     */
+    public function getThreadMainSAM ($id)
+    {
+        $res = $this->getTempQuery("SELECT thread FROM s_pars_main_5 WHERE id=$id", MYSQLI_ASSOC);
+        return (int)$res[0]['thread'];
+    }
+
+    /**
+     *  Уменьшает или увеличивает счётчик потоков
+     * @param int $id
+     * @param $operation
+     * @return int
+     */
+    public function updateThreadMainSAM ($id, $operation)
+    {
+        if (!($stmt = $this->mysql->prepare("UPDATE s_pars_main_5 set thread=thread".$operation." 1 WHERE  id=?"))
+        ) {
+            echo "Не удалось подготовить запрос: (" . $this->mysql->errno . ") " . $this->mysql->error;
+        }
+        if (!$stmt->bind_param("i", $id)
         ) {
             echo "Не удалось привязать параметры: (" . $stmt->errno . ") " . $stmt->error;
         }
@@ -496,7 +530,7 @@ class MySqlDB
     public function getCurrentParsingSAM ()
     {
         $res = $this->getTempQuery("SELECT 
-                                            m.id, m.date, m.date_end, count(*) cnt ,m.act
+                                            m.id, m.date, m.date_end, count(*) cnt ,m.act,m.thread
                                         FROM
                                             s_pars_main_5 m,
                                             s_pars_category_5 c,
@@ -515,9 +549,11 @@ class MySqlDB
 //------------ОКОНЧАНИ->ФУНКЦИИ ДЛЯ РАБОТЫ С ТЕСТОВЫЕ ФУНКЦИИ **/
 }
 
-
-//$m = new MySqlDB();
-//echo $m->getIdCategorySAM(1139);
+/*
+$m = new MySqlDB();
+$m->updateThreadMainSAM(63,'+');
+echo $m->getThreadMainSAM(63);
+*/
 
 //echo $m->getMaxId('s_pars_main');
 //var_dump($m->existCategorySAM(143));

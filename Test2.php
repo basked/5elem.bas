@@ -4,7 +4,7 @@ set_time_limit(100000); // время выполнения скрипта
 header("Content-type: text/html; charset = utf-8"); // кодировка utf-8
 require_once 'Parse5Elem.php';
 require_once 'MySqlDB.php';
-function insertCategoriesFrom5Elem ()
+function insertCategoriesFrom5Elem()
 {
     echo "insertCategoriesFrom5Elemdate " . date("H:i:s") . "\n\r";
     $p = new \Parse5Elem\Parse5Elem();
@@ -28,7 +28,7 @@ function insertCategoriesFrom5Elem ()
     echo date("H:i:s") . "\n\r";
 }
 
-function updateCategoriesFrom5Elem ()
+function updateCategoriesFrom5Elem()
 {
     echo "updateCategoriesFrom5Elem " . date("H:i:s") . "\n\r";
     $p = new \Parse5Elem\Parse5Elem();
@@ -56,7 +56,7 @@ function updateCategoriesFrom5Elem ()
     echo date("H:i:s") . "\n\r";
 }
 
-function insertProductFrom5Elem ($out_main_id = 0, $p_begCatId = 0)
+function insertProductFrom5Elem($out_main_id = 0, $p_begCatId = 0)
 {
     echo "getDescProductFrom5Elem " . date("H:i:s") . "\n\r";
     $p = new \Parse5Elem\Parse5Elem();
@@ -131,7 +131,7 @@ function insertProductFrom5Elem ($out_main_id = 0, $p_begCatId = 0)
     echo date("H:i:s") . "\n\r";
 }
 
-function insertProductFromLimit5Elem ($out_main_id = 0, $offset = 0)
+function insertProductFromLimit5Elem($out_main_id = 0, $offset = 0)
 {
     $m = new  \MySqlDB\MySqlDB();
     if ($out_main_id == 0) {
@@ -147,11 +147,13 @@ function insertProductFromLimit5Elem ($out_main_id = 0, $offset = 0)
     curl_setopt($ch1, CURLOPT_SSL_VERIFYPEER, false); // работа с https
     curl_setopt($ch1, CURLOPT_SSL_VERIFYHOST, false); // работа с https
     curl_setopt($ch1, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36'); //выставляем настройки браузера
-   // if ($_SERVER['COMPUTERNAME'] == 'GT-ASUP6VM') {
+    /* if ($_SERVER['COMPUTERNAME'] == 'GT-ASUP6VM') {
         curl_setopt($ch1, CURLOPT_PROXY, "172.16.15.33");
-        curl_setopt($ch1, CURLOPT_PROXYPORT, 3128);
-        curl_setopt($ch1, CURLOPT_PROXYUSERPWD, "gt-asup6:teksab");
-  //  }
+         curl_setopt($ch1, CURLOPT_PROXYPORT, 3128);
+         curl_setopt($ch1, CURLOPT_PROXYUSERPWD, "gt-asup6:teksab");
+     }*/
+    // увеличиваем счётчик
+    $m->updateThreadMainSAM($main_id, '+');
     foreach ($catUniRoots as $catUniRoot) {
         $curPage = 1;
         $i = 0;
@@ -173,7 +175,8 @@ function insertProductFromLimit5Elem ($out_main_id = 0, $offset = 0)
                     $productDesc[$i]['name'] = trim(pq($product)->find('.spec-product-middle-title>a')->text());
                     $productDesc[$i]['prodId'] = pq($product)->attr('data-id');
                     $productDesc[$i]['price'] = trim(str_replace(' ', '', pq($product)->find('span._price')->text()));
-                    $productDesc[$i]['code'] = trim(str_replace('Код:', '', pq($product)->find('product-middle-patio-code')->text()));
+                    $productDesc[$i]['code'] = pq($product)->find('product-middle-patio-code')->text();
+                    $productDesc[$i]['code'] = trim(str_replace('Код:', '', pq($product)->find('.product-middle-patio-code')->text()));
                     $productDesc[$i]['oplata_creditId'] = pq($product)->find('.product-item-sticker.product-item-sticker-credit.js-sticker')->attr('data-action-id');
                     $productDesc[$i]['oplata_name'] = pq($product)->find('.product-item-sticker.product-item-sticker-credit.js-sticker>img')->attr('title');
                     // делаем проверку на существование кредита
@@ -210,11 +213,16 @@ function insertProductFromLimit5Elem ($out_main_id = 0, $offset = 0)
             gc_collect_cycles();
         } while ($curPage <= $maxPage);
     }
-    $m->updateDateEndMainSAM($main_id, date("Y-m-d H:i:s"));
+    // уменьшаем счётчик
+    $m->updateThreadMainSAM($main_id, '-');
+    // если отработал последний поток
+    if ($m->getThreadMainSAM($main_id)==0) {
+        $m->updateDateEndMainSAM($main_id, date("Y-m-d H:i:s"));
+    }
     $m->close();
 }
 
-function getProductDetailFrom5Elem ()
+function getProductDetailFrom5Elem()
 {
     echo "getProductDetailFrom5Elem " . date("H:i:s") . "\n\r";
     $p = new \Parse5Elem\Parse5Elem();

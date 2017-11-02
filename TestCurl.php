@@ -13,7 +13,7 @@ for ($n = 0; $n <= 3; $n++) {
     $ch[$n] = curl_init($_SERVER['HTTP_HOST'].'/Test2.php');
     curl_setopt($ch[$n], CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch[$n], CURLOPT_FRESH_CONNECT, true);
-    curl_setopt($ch[$n], CURLOPT_TIMEOUT_MS, 60000);
+    curl_setopt($ch[$n], CURLOPT_TIMEOUT_MS, 50000);
     curl_setopt($ch[$n], CURLOPT_POSTFIELDS, array("offset" => ($n * 100), "out_main_id" => $main_id));
     curl_multi_add_handle($mh, $ch[$n]);
 }

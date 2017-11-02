@@ -1,6 +1,6 @@
 <html>
 <head>
-    <title>Bootstrap Example</title>
+    <title>Управление загрузкой</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
@@ -9,13 +9,13 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
 </head>
-<body>
+<body onload="load_p()">
 
-<div class="container">
+<div class="container" >
     <div class="row">
         <div class="col-sm-12">
             <form id="status">
-                <input id="run" type="button" class="btn btn-success disabled" onclick="run_p()" value="Запустить">
+                <input id="run" type="button" class="btn btn-success disabled" onclick="run_p(event)" value="Запустить">
                 <input id="info" type="button" class="btn btn-info" onclick="info_p()" value="Обновить">
                 <input id="test" type="button" class="btn btn-warring" onclick="test_p()" value="Тест">
             </form>
@@ -33,6 +33,8 @@
             <th>Время окончания</th>
             <th>Обработанно товаров</th>
             <th>Активность</th>
+            <th>Потоки</th>
+
         </tr>
         </thead>
         <tbody>
@@ -42,6 +44,7 @@
             <td id="date_end"></td>
             <td id="cnt"></td>
             <td id="act"></td>
+            <td id="thread"></td>
         </tr>
         </tbody>
     </table>

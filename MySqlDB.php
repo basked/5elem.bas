@@ -496,7 +496,7 @@ class MySqlDB
     public function getCurrentParsingSAM ()
     {
         $res = $this->getTempQuery("SELECT 
-                                            m.id, m.date, m.date_end, c.name cat_name, p.name prod_name, o.name opl_name
+                                            m.id, m.date, m.date_end, count(*) cnt ,m.act
                                         FROM
                                             s_pars_main_5 m,
                                             s_pars_category_5 c,
@@ -508,8 +508,7 @@ class MySqlDB
                                                 AND c.id = p.category_id
                                                 AND cn.product_id = p.id
                                                 AND cn.oplata_id = o.id
-                                                AND cn.main_id IN (SELECT MAX(id) FROM s_pars_main_5)
-                                        ORDER BY 1,4 DESC,5 ", MYSQLI_ASSOC);
+                                                AND cn.main_id IN (SELECT MAX(id) FROM s_pars_main_5)", MYSQLI_ASSOC);
         return $res;
     }
 

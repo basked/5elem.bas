@@ -173,7 +173,7 @@ function insertProductFromLimit5Elem ($out_main_id = 0, $offset = 0)
                     $productDesc[$i]['name'] = trim(pq($product)->find('.spec-product-middle-title>a')->text());
                     $productDesc[$i]['prodId'] = pq($product)->attr('data-id');
                     $productDesc[$i]['price'] = trim(str_replace(' ', '', pq($product)->find('span._price')->text()));
-                    $productDesc[$i]['code'] = trim(str_replace('Код товара:', '', pq($product)->find('.product-middle-patio-code')->text()));
+                    $productDesc[$i]['code'] = trim(str_replace('Код:', '', pq($product)->find('product-middle-patio-code')->text()));
                     $productDesc[$i]['oplata_creditId'] = pq($product)->find('.product-item-sticker.product-item-sticker-credit.js-sticker')->attr('data-action-id');
                     $productDesc[$i]['oplata_name'] = pq($product)->find('.product-item-sticker.product-item-sticker-credit.js-sticker>img')->attr('title');
                     // делаем проверку на существование кредита

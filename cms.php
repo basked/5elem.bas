@@ -14,12 +14,45 @@
         <div class="col-sm-12">
             <h1>Управление <? echo "CompanySam.by"; ?></h1>
             <p>Запус скрипта</p>
-            <form action="TestCurl.php">
+            <form id="status" action="all.php">
                 <input type="submit" class="btn btn-success disabled" value="Запустить">
             </form>
         </div>
     </div>
 </div>
+<div id="result"></div>
+<script>
+    var id, date, date_end, cnt, act;
+    /* прикрепить событие submit к форме */
+    $("#status").submit(function (e) {
+
+        var html = $.ajax({
+            url: "all.php",
+            async: false,
+            dataType: "json",
+            success: function (data) {
+                alert(data);
+                id = data[0].id;
+                date = data[0].date;
+                date_end = data[0].date_end;
+                cnt = data[0].cnt;
+                act = data[0].act;
+            }
+        });
+        if (act == 0) {
+            $("#result").append("<p>"+id+"</p>");
+            $("#result").append("<p>"+date+"</p>");
+            $("#result").append("<p>"+date_end+"</p>");
+            $("#result").append("<p>"+cnt+"</p>");
+            $("#result").append("<p>"+act+"</p>");
+            alert("Прасинг не завершен!");
+            e.preventDefault(); //Отменили нативное действие
+            (e.cancelBubble) ? e.cancelBubble : e.stopPropagation;
+        } else {
+            
+        }
+    })
+</script>
 
 
 </body>

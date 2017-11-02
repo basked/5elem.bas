@@ -111,10 +111,10 @@ class Parse5Elem
     {
         if (is_writable($fileName)) {
             if (!$handle = fopen($fileName, 'a')) {
-                echo "Ошибка открытия файла ($fileName)!";
+               // echo "Ошибка открытия файла ($fileName)!";
                 exit();
             }
-            if (fwrite($handle, $context) === FALSE) {
+            if (fwrite($handle, date("Y-m-d H:i:s").' '.$context.PHP_EOL) === FALSE) {
                // echo "Ошибка записи содержимого в файл ($fileName)";
                 exit();
             }

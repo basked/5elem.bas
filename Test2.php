@@ -1,5 +1,5 @@
 <?php
-error_reporting(E_ALL);
+//error_reporting(E_ALL);
 set_time_limit(100000); // время выполнения скрипта
 header("Content-type: text/html; charset = utf-8"); // кодировка utf-8
 require_once 'Parse5Elem.php';
@@ -254,9 +254,10 @@ if (empty($out_main_id)) {
 if (empty($offset)) {
     $offset = 0;
 }
-/*insertCategoriesFrom5Elem();
-updateCategoriesFrom5Elem();*/
-
+/*
+insertCategoriesFrom5Elem();
+updateCategoriesFrom5Elem();
+*/
 Parse5Elem\Parse5Elem::logToFile('log.txt', "Заупск парсинга для  Offset=$offset; Out_Main_id=$out_main_id ");
 insertProductFromLimit5Elem($out_main_id, $offset);
 Parse5Elem\Parse5Elem::logToFile('log.txt', "Окончание парсинга для  Offset=$offset; Out_Main_id=$out_main_id ");

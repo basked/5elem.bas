@@ -7,6 +7,10 @@ function test_p() {
     }
 }
 
+function clear_table_body() {
+    $("#stat_body").remove()
+}
+
 function enable_run_p() {
     $("#run").removeClass("disabled");
     return 1;
@@ -18,6 +22,7 @@ function disable_run_p() {
 }
 
 function info_p(e) {
+    var id, date, date_end, cnt, act, thread, time_serv;
     var html = $.ajax({
         url: "all.php",
         async: false,
@@ -32,22 +37,61 @@ function info_p(e) {
             thread = data[0].thread;
         }
     });
-    var id, date, date_end, cnt, act;
+
     $("#stat_body > tbody:last").append("<tr><td>" + id + "</td><td>" + time_serv + "</td><td>" + date + "</td><td>" + date_end + "</td><td>" + cnt + "</td><td>" + act + "</td><td>" + thread + "</td></tr>");
 
-    if (act == 1) {
+    if ((act == 1) || (act === null)) {
         enable_run_p();
     }
+    act==2?disable_run_p():enable_run_p();
+    return act;
+};
+
+function info_one_rec_p(e) {
+    var id, date, date_end, cnt, act, thread, time_serv;
+    var html = $.ajax({
+        url: "all.php",
+        async: false,
+        dataType: "json",
+        success: function (data) {
+            id = data[0].id;
+            time_serv = data[0].time_serv;
+            date = data[0].date;
+            date_end = data[0].date_end;
+            cnt = data[0].cnt;
+            act = data[0].act;
+            thread = data[0].thread;
+        }
+    });
+    //clear_table_body();
+    $("#id").text(id);
+    $("#time_serv").text(time_serv);
+    $("#date").text(date);
+    $("#date_end").text(date_end);
+    $("#cnt").text(cnt);
+    $("#act").text(act);
+    $("#thread").text(thread);
+    act==2?disable_run_p():enable_run_p();
     return act;
 };
 
 function load_p() {
-    if (info_p() == 1) {
+    if (info_one_rec_p() == 1) {
         enable_run_p();
     }
 }
+
+function sleep(milliseconds) {
+    var start = new Date().getTime();
+    for (var i = 0; i < 1e7; i++) {
+        if ((new Date().getTime() - start) > milliseconds){
+            break;
+        }
+    }
+}
+
+
 function run_p(e) {
-    // $("#status").submit(function (e) {
     var html = $.ajax({
         url: "all.php",
         async: false,
@@ -60,7 +104,7 @@ function run_p(e) {
             act = data[0].act;
         }
     });
-    var id, date, date_end, cnt, act;
+    var id, date, date_end, cnt, act, thread, time_serv;
 
     if (act == 2) {
         alert("Прасинг не завершен!");
@@ -73,6 +117,8 @@ function run_p(e) {
         } else {
         }
         $.post("/../TestCurl.php");
+        sleep(5000);
+        info_one_rec_p();
     }
 
 }

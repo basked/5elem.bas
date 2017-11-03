@@ -147,11 +147,11 @@ function insertProductFromLimit5Elem($out_main_id = 0, $offset = 0)
     curl_setopt($ch1, CURLOPT_SSL_VERIFYPEER, false); // работа с https
     curl_setopt($ch1, CURLOPT_SSL_VERIFYHOST, false); // работа с https
     curl_setopt($ch1, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36'); //выставляем настройки браузера
-    /* if ($_SERVER['COMPUTERNAME'] == 'GT-ASUP6VM') {
+  //   if ($_SERVER['COMPUTERNAME'] == 'GT-ASUP6VM') {
         curl_setopt($ch1, CURLOPT_PROXY, "172.16.15.33");
          curl_setopt($ch1, CURLOPT_PROXYPORT, 3128);
          curl_setopt($ch1, CURLOPT_PROXYUSERPWD, "gt-asup6:teksab");
-     }*/
+   //  }
     // увеличиваем счётчик
     $m->updateThreadMainSAM($main_id, '+');
     foreach ($catUniRoots as $catUniRoot) {
@@ -217,6 +217,7 @@ function insertProductFromLimit5Elem($out_main_id = 0, $offset = 0)
     $m->updateThreadMainSAM($main_id, '-');
     // если отработал последний поток
     if ($m->getThreadMainSAM($main_id)==0) {
+        $m->updateActMainSAM(0);
         $m->updateDateEndMainSAM($main_id, date("Y-m-d H:i:s"));
     }
     $m->close();

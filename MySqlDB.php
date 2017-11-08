@@ -542,7 +542,10 @@ class MySqlDB
                                                 AND c.id = p.category_id
                                                 AND cn.product_id = p.id
                                                 AND cn.oplata_id = o.id
-                                                AND cn.main_id IN (SELECT MAX(id) FROM s_pars_main_5)", MYSQLI_ASSOC);
+                                                AND cn.main_id IN (SELECT id FROM s_pars_main_5 where m.act in (0,1,2) )
+                                                GROUP BY  m.id, m.date, m.date_end,m.act,m.thread
+                                                ORDER BY m.id DESC
+                                                ", MYSQLI_ASSOC);
         return $res;
     }
 

@@ -8,7 +8,7 @@ function test_p() {
 }
 
 function clear_table_body() {
-    $("#stat_body").remove()
+    $("#stat_body>tbody>tr>td").remove();
 }
 
 function enable_run_p() {
@@ -47,6 +47,40 @@ function info_p(e) {
     return act;
 };
 
+function info_all_rec_p(e) {
+    var id, date, date_end, cnt, act, thread, time_serv;
+    var html = $.ajax({
+        url: "all.php",
+        async: false,
+        dataType: "json",
+        success: function (data) {
+            clear_table_body();
+            for (i=0;i<data.length;i++) {
+                id = data[i].id;
+                time_serv = data[i].time_serv;
+                date = data[i].date;
+                date_end = data[i].date_end;
+                cnt = data[i].cnt;
+                act = data[i].act;
+                thread = data[i].thread;
+                $("#stat_body > tbody:last").append("<tr><td>" + id + "</td><td>" + time_serv + "</td><td>" + date + "</td><td>" + date_end + "</td><td>" + cnt + "</td><td>" + act + "</td><td>" + thread + "</td></tr>");
+            }
+        }
+    });
+    $("#id").text(id);
+    $("#time_serv").text(time_serv);
+    $("#date").text(date);
+    $("#date_end").text(date_end);
+    $("#cnt").text(cnt);
+    $("#act").text(act);
+    $("#thread").text(thread);
+    act==2?disable_run_p():enable_run_p();
+    return act;
+};
+
+
+
+
 function info_one_rec_p(e) {
     var id, date, date_end, cnt, act, thread, time_serv;
     var html = $.ajax({
@@ -54,6 +88,7 @@ function info_one_rec_p(e) {
         async: false,
         dataType: "json",
         success: function (data) {
+            clear_table_body();
             id = data[0].id;
             time_serv = data[0].time_serv;
             date = data[0].date;
@@ -61,9 +96,10 @@ function info_one_rec_p(e) {
             cnt = data[0].cnt;
             act = data[0].act;
             thread = data[0].thread;
+            $("#stat_body > tbody:last").append("<tr><td>" + id + "</td><td>" + time_serv + "</td><td>" + date + "</td><td>" + date_end + "</td><td>" + cnt + "</td><td>" + act + "</td><td>" + thread + "</td></tr>");
         }
     });
-    //clear_table_body();
+
     $("#id").text(id);
     $("#time_serv").text(time_serv);
     $("#date").text(date);

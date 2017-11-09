@@ -7,6 +7,9 @@ function test_p() {
     }
 }
 
+function test() {
+    alert('basket');
+}
 function clear_table_body() {
     $("#stat_body>tbody>tr>td").remove();
 }
@@ -55,7 +58,8 @@ function info_all_rec_p(e) {
         dataType: "json",
         success: function (data) {
             clear_table_body();
-            for (i=0;i<data.length;i++) {
+            i=data.length-1;
+            do{ // for (i=0;i<data.length;i++) {
                 id = data[i].id;
                 time_serv = data[i].time_serv;
                 date = data[i].date;
@@ -63,8 +67,9 @@ function info_all_rec_p(e) {
                 cnt = data[i].cnt;
                 act = data[i].act;
                 thread = data[i].thread;
-                $("#stat_body > tbody:last").append("<tr><td>" + id + "</td><td>" + time_serv + "</td><td>" + date + "</td><td>" + date_end + "</td><td>" + cnt + "</td><td>" + act + "</td><td>" + thread + "</td></tr>");
-            }
+                $("#stat_body > tbody:first").append("<tr><td>" + id + "</td><td>" + time_serv + "</td><td>" + date + "</td><td>" + date_end + "</td><td>" + cnt + "</td><td>" + act + "</td><td>" + thread + "</td></tr>");
+                i=i-1;
+            } while (i>=0);
         }
     });
     $("#id").text(id);
@@ -152,7 +157,7 @@ function run_p(e) {
             alert("Управление запуском заблокировано на странице");
         } else {
         }
-        $.post("/../TestCurl.php");
+        $.post("TestCurl.php");
         sleep(5000);
         info_one_rec_p();
     }

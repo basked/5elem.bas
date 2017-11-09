@@ -15,8 +15,8 @@ class MySqlDB
 {
     const HOST = "localhost";
     const PORT = 3306;
-    const USER = 'root';
-    const PASS = '';
+    const USER = 'samshopcom';
+    const PASS = 'sKLZINhT';
     const DB = 'user1111058_sam';
 
 
@@ -522,7 +522,7 @@ class MySqlDB
         return $stmt->affected_rows;
     }
 
-
+ 
 //------------ОКОНЧАНИЕ->ФУНКЦИИ ДЛЯ РАБОТЫ С ЦЕНОЙ **/
 
 //------------НАЧАЛО->ФУНКЦИИ ДЛЯ РАБОТЫ С ТЕСТОВЫЕ ФУНКЦИИ **/
@@ -542,13 +542,18 @@ class MySqlDB
                                                 AND c.id = p.category_id
                                                 AND cn.product_id = p.id
                                                 AND cn.oplata_id = o.id
-                                                AND cn.main_id IN (SELECT id FROM s_pars_main_5 where m.act in (0,1,2) )
-                                                GROUP BY  m.id, m.date, m.date_end,m.act,m.thread
-                                                ORDER BY m.id DESC
-                                                ", MYSQLI_ASSOC);
+                                                AND cn.main_id IN (SELECT max(id) FROM s_pars_main_5 )
+                                                ORDER BY 1 DESC
+												/*GROUP BY  m.id, m.date, m.date_end,m.act,m.thread*/", MYSQLI_ASSOC);
         return $res;
     }
-
+  /*  public function getCurrentParsingSAM ()
+    {
+        $res = $this->getTempQuery("select  m.date, m.date_end, count(cn.id) cnt
+									from s_pars_cena_5 cn, s_pars_main_5 m 
+									where cn.main_id in (SELECT MAX(id) FROM s_pars_main_5) and m.id=cn.main_id", MYSQLI_ASSOC);
+        return $res;
+    }*/
 //------------ОКОНЧАНИ->ФУНКЦИИ ДЛЯ РАБОТЫ С ТЕСТОВЫЕ ФУНКЦИИ **/
 }
 

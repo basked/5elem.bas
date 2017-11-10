@@ -2,8 +2,8 @@
 <head>
     <title>Управление загрузкой</title>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="js/script.js"></script>
+    <!--<meta name="viewport" content="width=device-width, initial-scale=1">-->
+    <script src="js/script.js?<?php echo rand(0,50000) ?>"></script>
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
 
@@ -51,7 +51,7 @@
                        value="Запустить обновление">
                 <input id="info_one_rec" type="button" class="btn btn-info btn-md" onclick="info_one_rec_p()"
                        value="Последнее обновлние">
-                <!--   <input id="info_all_rec" type="button" class="btn btn-info btn-md" onclick="info_all_rec_p()"
+                <!--    <input id="info_all_rec" type="button" class="btn btn-info btn-md" onclick="info_all_rec_p()"
                        value="Показать все">-->
                 <!--   <input id="test" type="button" class="btn btn-warring" onclick="test_p()" value="Тест">-->
             </form>

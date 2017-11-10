@@ -545,6 +545,7 @@ class MySqlDB
                                                 AND cn.main_id IN (SELECT max(id) FROM s_pars_main_5 )
                                                 ORDER BY 1 DESC
 												/*GROUP BY  m.id, m.date, m.date_end,m.act,m.thread*/", MYSQLI_ASSOC);
+        Parse5Elem::logToFile('log.txt','parse yo');
         return $res;
     }
   /*  public function getCurrentParsingSAM ()

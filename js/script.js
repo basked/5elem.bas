@@ -1,3 +1,5 @@
+var r;
+r=Math.random() ;
 function test_p() {
     if ($("#run").hasClass('disabled')) {
         enable_run_p();
@@ -24,10 +26,15 @@ function disable_run_p() {
     return 0;
 }
 
+function getRandomArbitary(min, max)
+{
+    return Math.random() * (max - min) + min;
+}
+
 function info_p(e) {
     var id, date, date_end, cnt, act, thread, time_serv;
     var html = $.ajax({
-        url: "all.php",
+        url: "all.php"+"?"+r,
         async: false,
         dataType: "json",
         success: function (data) {
@@ -53,7 +60,7 @@ function info_p(e) {
 function info_all_rec_p(e) {
     var id, date, date_end, cnt, act, thread, time_serv;
     var html = $.ajax({
-        url: "all.php",
+        url: "all.php"+"?"+r,
         async: false,
         dataType: "json",
         success: function (data) {
@@ -89,7 +96,7 @@ function info_all_rec_p(e) {
 function info_one_rec_p(e) {
     var id, date, date_end, cnt, act, thread, time_serv;
     var html = $.ajax({
-        url: "all.php",
+        url: "all.php"+"?"+r,
         async: false,
         dataType: "json",
         success: function (data) {

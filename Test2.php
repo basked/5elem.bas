@@ -212,6 +212,7 @@ function insertProductFromLimit5Elem($out_main_id = 0, $offset = 0)
             phpQuery::unloadDocuments();
             gc_collect_cycles();
         } while ($curPage <= $maxPage);
+        $m->inserLogSAM(1, " Main_id=" . $out_main_id. ";Offset=".$offset.";CategoryID=" . $catUniRoot['catId'] .";curPage =". $curPage.";i=".$i);
     }
     // уменьшаем счётчик
     $m->updateThreadMainSAM($main_id, '-');

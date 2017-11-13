@@ -218,7 +218,7 @@ function insertProductFromLimit5Elem($out_main_id = 0, $offset = 0)
     $m->updateThreadMainSAM($main_id, '-');
     // если отработал последний поток
     if ($m->getThreadMainSAM($main_id)==0) {
-        $m->updateActMainSAM(0);
+        $m->updateActMainSAM($main_id,0);
         $m->updateDateEndMainSAM($main_id, date("Y-m-d H:i:s"));
     }
     $m->close();
